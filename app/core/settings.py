@@ -80,7 +80,7 @@ DATABASES = {
     }
 }
 
-LOGGING = {
+'''LOGGING = {
     'version': 1,
     'handlers': {
         'console': {'class': 'logging.StreamHandler'}
@@ -90,6 +90,15 @@ LOGGING = {
             'handlers': ['console'],
             'level': 'DEBUG'
         }
+    }
+}'''
+
+CELERY_BROKER_URL = 'redis://redis:6379/0'
+
+CACHES = {
+    'default': {
+        'BACKEND': 'django_redis.cache.RedisCache',
+        'LOCATION': 'redis://redis:6379/1',
     }
 }
 
@@ -136,3 +145,8 @@ STATIC_URL = 'static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 AUTH_USER_MODEL = 'subscription_service.TelegramUser'
+
+
+API_ENDPOINT = os.environ.get('API_ENDPOINT')
+API_KEY = os.environ.get('API_KEY')
+STAS_TRC20_WALLET_ADDRESS = os.environ.get('STAS_TRC20_WALLET_ADDRESS')

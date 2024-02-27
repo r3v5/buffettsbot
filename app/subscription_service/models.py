@@ -57,6 +57,7 @@ class Plan(models.Model):
 class Subscription(models.Model):
     customer = models.OneToOneField(TelegramUser, on_delete=models.CASCADE)
     plan = models.ForeignKey(Plan, on_delete=models.CASCADE)
+    transaction_hash = models.CharField(unique=True, null=False, blank=False, max_length=256, default='0x')
     start_date = models.DateTimeField(default=timezone.localtime)
     end_date = models.DateTimeField(null=True, blank=True)
 

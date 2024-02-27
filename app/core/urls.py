@@ -4,5 +4,5 @@ from django.urls import path, include
 
 urlpatterns = [
     path('tgadmin/', admin.site.urls),
-    path('subscriptions/', include('subscription_service.urls')),
+    path('api/', include('subscription_service.urls')),
 ]

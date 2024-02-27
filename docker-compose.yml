@@ -22,6 +22,54 @@ services:
       - ./.env.dev
     ports:
       - 5432:5432
+  
+  redis:
+    image: redis:7.2.4-alpine
+    hostname: redis
+  
+  worker:
+    build: ./app
+    hostname: worker
+    entrypoint: celery
+    command: -A celery_app.app worker --loglevel=info
+    volumes:
+      - ./app/:/usr/src/app/
+    links:
+      - redis
+    depends_on:
+      - redis
+      - subscriptions-db
+    env_file:
+      - ./.env.dev
+  
+  celery-beat:
+    build: ./app
+    hostname: celery-beat
+    entrypoint: celery
+    command: -A celery_app.app beat --loglevel=info
+    volumes:
+      - ./app/:/usr/src/app/
+    depends_on:
+      - redis
+      - subscriptions-db
+    env_file:
+      - ./.env.dev
+  
+  flower:
+    build: ./app
+    hostname: flower
+    entrypoint: celery
+    command: -A celery_app.app flower
+    volumes:
+      - ./app/:/usr/src/app/
+    links:
+      - redis
+    depends_on:
+      - redis
+    env_file:
+      - ./.env.dev
+    ports:
+      - 5555:5555
 
 volumes:
   postgres_data:

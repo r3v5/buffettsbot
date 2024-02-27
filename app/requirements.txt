@@ -6,3 +6,5 @@ pytest==8.0.0
 celery[redis]==5.3.6
 django-redis==5.4.0
 django-cachalot==2.6.2
+flower==2.0.1
+requests

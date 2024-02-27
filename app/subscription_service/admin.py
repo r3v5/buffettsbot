@@ -29,7 +29,7 @@ class PlanAdmin(admin.ModelAdmin):
 
 @admin.register(Subscription)
 class SubscriptionAdmin(admin.ModelAdmin):
-    list_display = ['customer', 'plan', 'format_start_date', 'format_end_date']
+    list_display = ['customer', 'plan', 'transaction_hash', 'format_start_date', 'format_end_date']
 
     def format_start_date(self, obj: Subscription) -> str:
         return obj.start_date.strftime('%Y-%m-%d %H:%M:%S Moscow Time')
