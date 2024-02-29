@@ -34,31 +34,18 @@ class Plan(models.Model):
     ]
 
     period = models.CharField(max_length=20, choices=PERIOD_CHOICES)
-    price = models.PositiveIntegerField(null=True, blank=True)
+    price = models.PositiveIntegerField(null=False, blank=False, default=10)
+
 
     def __str__(self) -> str:
         return f"{self.period} Plan - ${self.price}"
-
-    def save(self, *args: dict, **kwargs: dict) -> None:
-        if self.period:
-            if self.period == '2 days':
-                self.price = 19
-            elif self.period == '1 month':
-                self.price = 150
-            elif self.period == '3 months':
-                self.price = 400
-            elif self.period == '6 months':
-                self.price = 600
-            elif self.period == '1 year':
-                self.price = 1000
-        super(Plan, self).save(*args, **kwargs)
 
 
 class Subscription(models.Model):
     customer = models.OneToOneField(TelegramUser, on_delete=models.CASCADE)
     plan = models.ForeignKey(Plan, on_delete=models.CASCADE)
     transaction_hash = models.CharField(unique=True, null=False, blank=False, max_length=256, default='0x')
-    start_date = models.DateTimeField(default=timezone.localtime)
+    start_date = models.DateTimeField(default=timezone.now)
     end_date = models.DateTimeField(null=True, blank=True)
 
 

@@ -4,26 +4,15 @@ from rest_framework.permissions import AllowAny
 from django.http import HttpResponse, HttpRequest
 from rest_framework import status
 from .serializers import TelegramUserSerializer, SubscriptionSerializer
-import os, requests
-from .models import TelegramUser, Subscription, Plan
-
-
-'''class SubscriptionChecker:
-    VALID_SUBSCRIPTIONS_USDT = set([19, 150, 400, 600, 1000])
-
-
-    @classmethod
-    def is_subscriber(cls, amount_usdt: int) -> bool:
-        if amount_usdt in cls.VALID_SUBSCRIPTIONS_USDT or amount_usdt > max(cls.VALID_SUBSCRIPTIONS_USDT):
-            return True
-        else:
-            return False
+import os
+import requests
+from .models import TelegramUser, Plan
 
 
 class TronConnector:
-    API_ENDPOINT = os.environ.get("API_ENDPOINT")
-    API_KEY = os.environ.get("API_KEY")
-    STAS_TRC20_WALLET_ADDRESS = os.environ.get("STAS_TRC20_WALLET_ADDRESS")
+    API_ENDPOINT = os.environ.get('API_ENDPOINT')
+    API_KEY = os.environ.get('API_KEY')
+    STAS_TRC20_WALLET_ADDRESS = os.environ.get('STAS_TRC20_WALLET_ADDRESS')
 
 
     @staticmethod
@@ -32,7 +21,9 @@ class TronConnector:
 
 
     @classmethod
-    def is_tx_hash_valid(cls, tx_hash: str) -> bool:
+    # add plan_name: str as a parameter
+    def is_tx_hash_valid(cls, tx_hash: str, plan_price: int) -> bool:
+        is_valid = False
         url = f'{cls.API_ENDPOINT}={tx_hash}'
         headers = {
             'Accept': 'application/json',
@@ -46,47 +37,39 @@ class TronConnector:
                 valid_data = response.json()
                 for transfer_info in valid_data["trc20TransferInfo"]:
                     if transfer_info["to_address"] != cls.STAS_TRC20_WALLET_ADDRESS:
-                        print(f"Stanislav Ivankin {cls.STAS_TRC20_WALLET_ADDRESS} didn't get your USDT!")
-                        return False
+                        print(f"Stanislav Ivankin {cls.STAS_TRC20_WALLET_ADDRESS} didn't get your USDT!", is_valid)
+                        return is_valid
                     else:
                         amount_usdt = cls.convert_string_to_trc20(
                             transfer_info["amount_str"],
                             transfer_info["decimals"]
                         )
-                        is_subscriber = SubscriptionChecker.is_subscriber(amount_usdt)
-                        if is_subscriber:
+                        if amount_usdt >= plan_price:
                             result = {
                                 "tx_hash": tx_hash,
                                 "to_address": transfer_info["to_address"],
                                 "amount_usdt": amount_usdt,
-                                "is_subscriber": is_subscriber
+                                "subscription_price": plan_price
                             }
-                            print(result)
-                            return True
+                            is_valid = True
+                            print(result, is_valid)
+                            return is_valid
                         else:
-                            return False
+                            result = {
+                                "tx_hash": tx_hash,
+                                "to_address": transfer_info["to_address"],
+                                "amount_usdt": amount_usdt,
+                                "subscription_price": plan_price
+                            }
+                            print(result, is_valid)
+                            return is_valid
             else:
                 print(f"Error: {response.status_code}")
-                return False
+                return is_valid
         except Exception as e:
             print(f"Error occurred: {e}")
-            return False
+            return is_valid
     
-
-# Valid test case
-tx = TronConnector.is_tx_hash_valid("357648462a7b472c7ac1123550023a0674aca4849fc385bd67e3a51aeb492564")
-print(f"{tx}\n")
-
-
-# Unvalid test case where to address isn't Stas's wallet address
-tx = TronConnector.is_tx_hash_valid("bea676853563a236e355aae05622aae5f28a03f071280ac4b907cc9147667b41")
-print(f"{tx}\n")
-
-
-# Unvalid test case where there is no USDT token
-tx = TronConnector.is_tx_hash_valid("b55cc2b0103ca8933e72bdd7e42269220b1b7e1b1a27448571aa03cb3c7875ea")
-print(f"{tx}\n")'''
-
 
 class TelegramUserAPIView(APIView):
     permission_classes = [AllowAny]
@@ -111,10 +94,12 @@ class SubscriptionAPIView(APIView):
     def post(self, request: HttpRequest) -> HttpResponse:
         data = request.data
 
+
         # Extract data from request JSON
         telegram_username = data.get('telegram_username')
-        plan_id = data.get('plan')
+        plan_name = data.get('plan')
         transaction_hash = data.get('transaction_hash')
+
 
         # Find the user with the given telegram_username
         try:
@@ -122,15 +107,27 @@ class SubscriptionAPIView(APIView):
         except TelegramUser.DoesNotExist:
             return Response({'message': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
 
-        # Create the subscription data with primary key values
-        subscription_data = {
-            'customer': user.pk,  # Pass the primary key value instead of the object
-            'plan': plan_id,      # Pass the primary key value instead of the object
-            'transaction_hash': transaction_hash
-        }
-        serializer = SubscriptionSerializer(data=subscription_data)
 
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        # Find the plan with the given plan name
+        try:
+            plan = Plan.objects.get(period=plan_name)
+        except Plan.DoesNotExist:
+            return Response({'message': 'Plan not found'}, status=status.HTTP_404_NOT_FOUND)
+        
+
+        # Get the price of the plan
+        plan_price = plan.price
+
+
+        success = TronConnector.is_tx_hash_valid(tx_hash=transaction_hash, plan_price=plan_price)
+        if success:
+            subscription_data = {
+                'customer': user.pk,
+                'plan': plan.pk,
+                'transaction_hash': transaction_hash
+            }
+            serializer = SubscriptionSerializer(data=subscription_data)
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data, status=status.HTTP_201_CREATED)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

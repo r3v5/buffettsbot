@@ -2,7 +2,8 @@ from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APIClient
 import pytest
-from subscription_service.models import TelegramUser
+import json
+from subscription_service.models import TelegramUser, Plan, Subscription
 
 
 @pytest.mark.django_db
@@ -38,3 +39,64 @@ def test_invalid_telegram_user():
     assert 'telegram_username' in response.data
     expected_errors = {'telegram_username': ['This field is required.']}
     assert response.data == expected_errors
+
+
+@pytest.mark.django_db
+def test_valid_create_subscription():
+    # Create sample data
+    TelegramUser.objects.create(telegram_username='@test_user')
+    Plan.objects.create(period='2 days', price=19)
+    subscriptions = Subscription.objects.all()
+    assert len(subscriptions) == 0
+
+
+    # Prepare data for POST request
+    data = {
+        'telegram_username': '@test_user',
+        'plan': '2 days',
+        'transaction_hash': '357648462a7b472c7ac1123550023a0674aca4849fc385bd67e3a51aeb492564'
+    }
+
+
+    client = APIClient()
+    url = reverse('create-subscription')
+
+
+    # Make POST request
+    response = client.post(url, data, format='json')
+
+
+    assert response.status_code == status.HTTP_201_CREATED
+
+    subscriptions = Subscription.objects.all()
+    assert len(subscriptions) == 1
+
+
+@pytest.mark.django_db
+def test_invalid_create_subscription():
+    # Create sample data
+    TelegramUser.objects.create(telegram_username='@test_user')
+    Plan.objects.create(period='2 days', price=19)
+    subscriptions = Subscription.objects.all()
+    assert len(subscriptions) == 0
+
+
+    # Prepare data for POST request
+    data = {
+        'telegram_username': '@test_user',
+        'transaction_hash': '357648462a7b472c7ac1123550023a0674aca4849fc385bd67e3a51aeb492564'
+    }
+
+
+    client = APIClient()
+    url = reverse('create-subscription')
+
+
+    # Make POST request
+    response = client.post(url, data, format='json')
+
+
+    assert response.status_code == status.HTTP_404_NOT_FOUND
+
+    subscriptions = Subscription.objects.all()
+    assert len(subscriptions) == 0

@@ -33,43 +33,20 @@ def test_telegram_user_str_method():
 
 @pytest.mark.django_db
 def test_plan_model():
-    plan = Plan.objects.create(period='2 days')
-    assert plan.price == 19
-
-    plan = Plan.objects.create(period='1 month')
-    assert plan.price == 150
-
-    plan = Plan.objects.create(period='3 months')
-    assert plan.price == 400
-
-    plan = Plan.objects.create(period='6 months')
-    assert plan.price == 600
-
-    plan = Plan.objects.create(period='1 year')
-    assert plan.price == 1000
+    plan = Plan.objects.create(period='2 days', price=19)
+    assert plan is not None
 
 
 @pytest.mark.django_db
-def test_save_method():
-    plan = Plan(period='2 days')
-    plan.save()
-    assert plan.price == 19
+def test_plan_str_method():
+    plan = Plan.objects.create(period='2 days', price=19)
+    assert str(plan) == '2 days Plan - $19'
 
-    plan = Plan(period='1 month')
-    plan.save()
-    assert plan.price == 150
 
-    plan = Plan(period='3 months')
-    plan.save()
-    assert plan.price == 400
-
-    plan = Plan(period='6 months')
-    plan.save()
-    assert plan.price == 600
-
-    plan = Plan(period='1 year')
-    plan.save()
-    assert plan.price == 1000
+@pytest.mark.django_db
+def test_default_price():
+    plan = Plan.objects.create(period='6 months')
+    assert plan.price == 10
 
 
 @pytest.mark.django_db
@@ -96,7 +73,7 @@ def test_subscription_model():
 
 
 @pytest.mark.django_db
-def test_save_method():
+def test_subscription_save_method():
     # Create a test plan
     plan = Plan.objects.create(period='1 month', price=150)
 

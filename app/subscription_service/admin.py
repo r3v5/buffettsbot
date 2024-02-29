@@ -29,12 +29,12 @@ class PlanAdmin(admin.ModelAdmin):
 
 @admin.register(Subscription)
 class SubscriptionAdmin(admin.ModelAdmin):
-    list_display = ['customer', 'plan', 'transaction_hash', 'format_start_date', 'format_end_date']
+    list_display = ['customer', 'plan', 'transaction_hash', 'start_date', 'end_date']
 
-    def format_start_date(self, obj: Subscription) -> str:
+    '''def format_start_date(self, obj: Subscription) -> str:
         return obj.start_date.strftime('%Y-%m-%d %H:%M:%S Moscow Time')
     format_start_date.short_description = 'Start Date (Moscow Time)'
     
     def format_end_date(self, obj: Subscription) -> str:
         return obj.end_date.strftime('%Y-%m-%d %H:%M:%S Moscow Time') if obj.end_date else '-'
-    format_end_date.short_description = 'End Date (Moscow Time)'
+    format_end_date.short_description = 'End Date (Moscow Time)'''
