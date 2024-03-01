@@ -2,8 +2,10 @@ from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APIClient
 import pytest
-import json
 from subscription_service.models import TelegramUser, Plan, Subscription
+from django.utils import timezone
+from django.utils.timezone import localtime
+import datetime
 
 
 @pytest.mark.django_db
@@ -59,7 +61,7 @@ def test_valid_create_subscription():
 
 
     client = APIClient()
-    url = reverse('create-subscription')
+    url = reverse('manage-subscription')
 
 
     # Make POST request
@@ -89,7 +91,7 @@ def test_invalid_create_subscription():
 
 
     client = APIClient()
-    url = reverse('create-subscription')
+    url = reverse('manage-subscription')
 
 
     # Make POST request
@@ -100,3 +102,107 @@ def test_invalid_create_subscription():
 
     subscriptions = Subscription.objects.all()
     assert len(subscriptions) == 0
+
+
+@pytest.mark.django_db
+def test_valid_get_subscription():
+    # Create a TelegramUser
+    user = TelegramUser.objects.create(
+        telegram_username='@test_user',
+        first_name='Test',
+        last_name='User'
+    )
+
+
+    # Create a Plan
+    plan = Plan.objects.create(
+        period='2 days',
+        price=19
+    )
+
+
+    # Create a Subscription
+    subscription = Subscription.objects.create(
+        customer=user,
+        plan=plan,
+        transaction_hash='0x123456789abcdef',
+        start_date=timezone.now(),
+        end_date=timezone.now() + datetime.timedelta(days=2)
+    )
+
+    # Convert subscription.start_date to the local time zone
+    local_start_date = localtime(subscription.start_date)
+
+    # Convert subscription.start_date to a string with the same format as response.data['start_date']
+    expected_start_date_str = local_start_date.strftime('%d/%m/%Y %H:%M:%S')
+
+    # Calculate the expected end date and convert it to the local time zone
+    expected_end_date = subscription.end_date
+    expected_end_date = localtime(expected_end_date)
+
+    # Convert expected_end_date to a string with the same format as response.data['end_date']
+    expected_end_date_str = expected_end_date.strftime('%d/%m/%Y %H:%M:%S')
+
+    # Prepare data for POST request
+    data = {
+        'telegram_username': user.telegram_username
+    }
+
+
+    client = APIClient()
+    url = reverse('manage-subscription')
+
+
+    # Make a GET request with the user's telegram_username
+    response = client.get(url, data, format='json')
+
+    print(f'response: {response.data}')
+
+    assert response.status_code == status.HTTP_200_OK
+    assert response.data['customer'] == user.telegram_username
+    assert response.data['plan'] == plan.period
+    assert response.data['price'] == plan.price
+    assert response.data['transaction_hash'] == subscription.transaction_hash
+    assert response.data['start_date'] == expected_start_date_str
+    assert response.data['end_date'] == expected_end_date_str
+
+
+@pytest.mark.django_db
+def test_invalid_get_subscription():
+    # Create a TelegramUser
+    user = TelegramUser.objects.create(
+        telegram_username='@test_user',
+        first_name='Test',
+        last_name='User'
+    )
+
+    # Prepare data for POST request
+    data = {
+        'telegram_username': user.telegram_username
+    }
+
+    client = APIClient()
+    url = reverse('manage-subscription')
+
+    # Make a GET request with a non-existent user's telegram_username
+    response = client.get(url, data, format='json')
+
+    assert response.status_code == status.HTTP_404_NOT_FOUND
+    assert 'message' in response.data
+    assert response.data['message'] == 'Subscription not found'
+
+
+    # Prepare data for POST request
+    data = {
+        'telegram_username': '@fox'
+    }
+
+    client = APIClient()
+    url = reverse('manage-subscription')
+
+    # Make a GET request with a non-existent user's telegram_username
+    response = client.get(url, data, format='json')
+
+    assert response.status_code == status.HTTP_404_NOT_FOUND
+    assert 'message' in response.data
+    assert response.data['message'] == 'User not found'

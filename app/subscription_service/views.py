@@ -3,10 +3,10 @@ from rest_framework.response import Response
 from rest_framework.permissions import AllowAny
 from django.http import HttpResponse, HttpRequest
 from rest_framework import status
-from .serializers import TelegramUserSerializer, SubscriptionSerializer
+from .serializers import TelegramUserSerializer, PostSubscriptionSerializer, GetSubscriptionSerializer
 import os
 import requests
-from .models import TelegramUser, Plan
+from .models import TelegramUser, Plan, Subscription
 
 
 class TronConnector:
@@ -21,8 +21,7 @@ class TronConnector:
 
 
     @classmethod
-    # add plan_name: str as a parameter
-    def is_tx_hash_valid(cls, tx_hash: str, plan_price: int) -> bool:
+    def validate_tx_hash(cls, tx_hash: str, plan_price: int) -> bool:
         is_valid = False
         url = f'{cls.API_ENDPOINT}={tx_hash}'
         headers = {
@@ -91,6 +90,33 @@ class SubscriptionAPIView(APIView):
     permission_classes = [AllowAny]
 
 
+    def get(self, request: HttpRequest) -> HttpResponse:
+        data = request.data
+        
+
+        # Get the username from the query parameters
+        telegram_username = request.query_params.get('telegram_username')
+
+
+        # Find the user with the given telegram_username
+        try:
+            user = TelegramUser.objects.get(telegram_username=telegram_username)
+        except TelegramUser.DoesNotExist:
+            return Response({'message': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+        
+
+        # Retrieve the subscription for the user
+        try:
+            subscription = Subscription.objects.get(customer=user)
+        except Subscription.DoesNotExist:
+            return Response({'message': 'Subscription not found'}, status=status.HTTP_404_NOT_FOUND)
+
+
+        # Initialize the serializer with the subscription instance
+        serializer = GetSubscriptionSerializer(instance=subscription)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+
     def post(self, request: HttpRequest) -> HttpResponse:
         data = request.data
 
@@ -119,14 +145,14 @@ class SubscriptionAPIView(APIView):
         plan_price = plan.price
 
 
-        success = TronConnector.is_tx_hash_valid(tx_hash=transaction_hash, plan_price=plan_price)
+        success = TronConnector.validate_tx_hash(tx_hash=transaction_hash, plan_price=plan_price)
         if success:
             subscription_data = {
                 'customer': user.pk,
                 'plan': plan.pk,
                 'transaction_hash': transaction_hash
             }
-            serializer = SubscriptionSerializer(data=subscription_data)
+            serializer = PostSubscriptionSerializer(data=subscription_data)
             if serializer.is_valid():
                 serializer.save()
                 return Response(serializer.data, status=status.HTTP_201_CREATED)

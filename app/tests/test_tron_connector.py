@@ -23,9 +23,7 @@ class TestTronConnector(unittest.TestCase):
 
 
     @patch('requests.get')
-    def test_is_tx_hash_valid(self, mock_get):
-        # Test the is_tx_hash_valid method
-
+    def test_validate_tx_hash(self, mock_get):
         # Mock response data
         mock_response_data = {
             "trc20TransferInfo": [
@@ -48,18 +46,18 @@ class TestTronConnector(unittest.TestCase):
         # Test case where amount_usdt >= plan_price
         tx_hash = 'test_tx_hash'
         plan_price = 100
-        result = TronConnector.is_tx_hash_valid(tx_hash, plan_price)
+        result = TronConnector.validate_tx_hash(tx_hash, plan_price)
         self.assertTrue(result)
 
 
         # Test case where amount_usdt < plan_price
         plan_price = 200
-        result = TronConnector.is_tx_hash_valid(tx_hash, plan_price)
+        result = TronConnector.validate_tx_hash(tx_hash, plan_price)
         self.assertFalse(result)
 
 
     @patch('requests.get')
-    def test_is_tx_hash_valid_error_handling(self, mock_get):
+    def test_validate_tx_hash_error_handling(self, mock_get):
         # Test error handling in is_tx_hash_valid method
 
         # Mock the response object to simulate a failed request
@@ -69,7 +67,7 @@ class TestTronConnector(unittest.TestCase):
 
         tx_hash = 'test_tx_hash'
         plan_price = 100
-        result = TronConnector.is_tx_hash_valid(tx_hash, plan_price)
+        result = TronConnector.validate_tx_hash(tx_hash, plan_price)
         self.assertFalse(result)
 
 if __name__ == '__main__':

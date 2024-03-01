@@ -11,5 +11,5 @@ def test_create_user_url():
 
 @pytest.mark.django_db
 def test_create_user_url():
-    resolver = reverse('create-subscription')
+    resolver = reverse('manage-subscription')
     assert resolve(resolver).func.view_class == SubscriptionAPIView
