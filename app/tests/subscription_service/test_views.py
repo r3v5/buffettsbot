@@ -184,7 +184,7 @@ def test_invalid_get_subscription():
     client = APIClient()
     url = reverse('manage-subscription')
 
-    # Make a GET request with a non-existent user's telegram_username
+    # Make a GET request with a non-existent subscription
     response = client.get(url, data, format='json')
 
     assert response.status_code == status.HTTP_404_NOT_FOUND

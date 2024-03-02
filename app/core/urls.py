@@ -1,8 +1,7 @@
 from django.contrib import admin
-from django.urls import path, include
-
+from django.urls import include, path
 
 urlpatterns = [
-    path('tgadmin/', admin.site.urls),
-    path('api/', include('subscription_service.urls')),
+    path("tgadmin/", admin.site.urls),
+    path("api/", include("subscription_service.urls")),
 ]

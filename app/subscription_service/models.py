@@ -1,7 +1,9 @@
+from datetime import timedelta
+
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin
 from django.db import models
 from django.utils import timezone
-from datetime import timedelta
+
 from .managers import TelegramUserManager
 
 
@@ -17,7 +19,7 @@ class TelegramUser(AbstractBaseUser, PermissionsMixin):
 
     objects = TelegramUserManager()
 
-    USERNAME_FIELD = 'telegram_username'
+    USERNAME_FIELD = "telegram_username"
     REQUIRED_FIELDS = []
 
     def __str__(self) -> str:
@@ -26,16 +28,15 @@ class TelegramUser(AbstractBaseUser, PermissionsMixin):
 
 class Plan(models.Model):
     PERIOD_CHOICES = [
-        ('2 days', '2 days'),
-        ('1 month', '1 month'),
-        ('3 months', '3 months'),
-        ('6 months', '6 months'),
-        ('1 year', '1 year'),
+        ("2 days", "2 days"),
+        ("1 month", "1 month"),
+        ("3 months", "3 months"),
+        ("6 months", "6 months"),
+        ("1 year", "1 year"),
     ]
 
     period = models.CharField(max_length=20, choices=PERIOD_CHOICES)
     price = models.PositiveIntegerField(null=False, blank=False, default=10)
-
 
     def __str__(self) -> str:
         return f"{self.period} Plan - ${self.price}"
@@ -44,25 +45,22 @@ class Plan(models.Model):
 class Subscription(models.Model):
     customer = models.OneToOneField(TelegramUser, on_delete=models.CASCADE)
     plan = models.ForeignKey(Plan, on_delete=models.CASCADE)
-    transaction_hash = models.CharField(unique=True, null=False, blank=False, max_length=256, default='0x')
+    transaction_hash = models.CharField(
+        unique=True, null=False, blank=False, max_length=256, default="0x"
+    )
     start_date = models.DateTimeField(default=timezone.now)
     end_date = models.DateTimeField(null=True, blank=True)
 
-
     def save(self, *args: dict, **kwargs: dict) -> None:
-        if self.plan.period == '2 days':
+        if self.plan.period == "2 days":
             self.end_date = self.start_date + timedelta(days=2)
-        elif self.plan.period == '1 month':
+        elif self.plan.period == "1 month":
             self.end_date = self.start_date + timedelta(days=30)
-        elif self.plan.period == '3 months':
+        elif self.plan.period == "3 months":
             self.end_date = self.start_date + timedelta(days=90)
-        elif self.plan.period == '6 months':
+        elif self.plan.period == "6 months":
             self.end_date = self.start_date + timedelta(days=180)
-        elif self.plan.period == '1 year':
+        elif self.plan.period == "1 year":
             self.end_date = self.start_date + timedelta(days=365)
-        
-        super(Subscription, self).save(*args, **kwargs)
 
-        # Update the related user's at_group field to True
-        self.customer.at_private_group = True
-        self.customer.save(update_fields=['at_private_group'])
+        super(Subscription, self).save(*args, **kwargs)
