@@ -37,7 +37,7 @@ class Plan(models.Model):
         ("1 year", "1 year"),
     ]
 
-    period = models.CharField(max_length=20, choices=PERIOD_CHOICES)
+    period = models.CharField(unique=True, max_length=20, choices=PERIOD_CHOICES)
     price = models.PositiveIntegerField(null=False, blank=False, default=10)
 
     def __str__(self) -> str:
