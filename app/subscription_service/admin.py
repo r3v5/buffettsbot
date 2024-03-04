@@ -1,10 +1,9 @@
 from django.contrib import admin
-from django.contrib.auth.admin import UserAdmin
 
 from .models import Plan, Subscription, TelegramUser
 
 
-class TelegramUserAdmin(UserAdmin):
+class TelegramUserAdmin(admin.ModelAdmin):
     model = TelegramUser
     list_display = (
         "chat_id",
@@ -14,12 +13,15 @@ class TelegramUserAdmin(UserAdmin):
         "at_private_group",
         "date_joined",
         "is_staff",
+        "is_superuser",
     )
     search_fields = (
         "chat_id",
         "telegram_username",
         "first_name",
         "last_name",
+        "is_staff",
+        "is_superuser",
     )
     ordering = (
         "chat_id",
@@ -28,6 +30,8 @@ class TelegramUserAdmin(UserAdmin):
         "last_name",
         "at_private_group",
         "date_joined",
+        "is_staff",
+        "is_superuser",
     )
     list_filter = ("is_staff", "is_superuser", "at_private_group")
 

@@ -8,11 +8,8 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from .models import Plan, Subscription, TelegramUser
-from .serializers import (
-    GetSubscriptionSerializer,
-    PostSubscriptionSerializer,
-    TelegramUserSerializer,
-)
+from .serializers import (GetSubscriptionSerializer,
+                          PostSubscriptionSerializer, TelegramUserSerializer)
 
 
 class TronTransactionAnalyzer:

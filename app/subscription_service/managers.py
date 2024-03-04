@@ -1,5 +1,4 @@
-from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
-from django.db import models
+from django.contrib.auth.models import BaseUserManager
 
 
 class TelegramUserManager(BaseUserManager):
@@ -11,7 +10,7 @@ class TelegramUserManager(BaseUserManager):
         last_name: str,
         at_private_group: bool,
         password=None,
-    ) -> "TelegramUser":
+    ):
         if not chat_id and not telegram_username:
             raise ValueError(
                 "telegram_id field must be set\nchat_id field must be set\ntelegram_username field must be set"
@@ -27,9 +26,7 @@ class TelegramUserManager(BaseUserManager):
         user.save(using=self._db)
         return user
 
-    def create_superuser(
-        self, telegram_username: str, chat_id: int, password=None
-    ) -> "TelegramUser":
+    def create_superuser(self, telegram_username: str, chat_id: int, password=None):
         user = self.create_user(
             chat_id=chat_id,
             telegram_username=telegram_username,

@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from .models import Plan, Subscription, TelegramUser
+from .models import Subscription, TelegramUser
 
 
 class TelegramUserSerializer(serializers.ModelSerializer):

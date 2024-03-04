@@ -1,5 +1,4 @@
 import os
-from datetime import timedelta
 from typing import Union
 
 import requests
@@ -36,7 +35,7 @@ def add_user_to_private_group():
     # Get the admins
     try:
         admins = TelegramUser.objects.filter(is_staff=True)
-        print("Found user:", admins)
+        print("Founded users:", admins)
     except TelegramUser.DoesNotExist:
         print("Users not found.")
 
@@ -66,7 +65,7 @@ def add_user_to_private_group():
                 if response.status_code == 200:
                     subscription.customer.at_private_group = True
                     subscription.customer.save(update_fields=["at_private_group"])
-                    print(f"User {telegram_username} added to the group.")
+                    print(f"User {telegram_username} must be added to the group.")
                 else:
                     print(
                         f"Failed to add user {telegram_username} to the group. Status code: {response.status_code}"
