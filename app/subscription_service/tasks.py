@@ -8,7 +8,7 @@ from celery import shared_task
 from .models import Subscription, TelegramUser
 
 
-class TelegramConnector:
+class TelegramMessageSender:
     TELEGRAM_BOT_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN")
     TELEGRAM_PRIVATE_GROUP_ID = os.environ.get("TELEGRAM_PRIVATE_GROUP_ID")
 
@@ -28,7 +28,7 @@ class TelegramConnector:
 
 
 @shared_task
-def add_users_to_private_group():
+def add_user_to_private_group():
     subscriptions = Subscription.objects.filter(
         customer__at_private_group=False
     ).select_related("customer")
@@ -59,7 +59,7 @@ def add_users_to_private_group():
                     "Click the link to copy the transaction hash."
                 )
 
-                response = TelegramConnector.send_message_to_admin_of_group(
+                response = TelegramMessageSender.send_message_to_admin_of_group(
                     message=message, chat_id=admin.chat_id
                 )
 

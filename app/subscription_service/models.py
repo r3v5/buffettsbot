@@ -8,9 +8,8 @@ from .managers import TelegramUserManager
 
 
 class TelegramUser(AbstractBaseUser, PermissionsMixin):
-    telegram_id = models.PositiveBigIntegerField(null=True)
     chat_id = models.PositiveBigIntegerField(
-        unique=True, null=False, blank=False, default=664935782
+        unique=True, primary_key=True, null=False, blank=False, default=664935782
     )  # JOanix chat_id as default
     telegram_username = models.CharField(unique=True, blank=False, max_length=256)
     first_name = models.CharField(null=True, blank=True, max_length=256)

@@ -15,7 +15,7 @@ app.conf.broker_url = settings.CELERY_BROKER_URL
 # Configure Celery Beat
 app.conf.beat_schedule = {
     "add_users_to_private_group": {
-        "task": "subscription_service.tasks.add_users_to_private_group",
+        "task": "subscription_service.tasks.add_user_to_private_group",
         "schedule": 10.0,
     }
 }

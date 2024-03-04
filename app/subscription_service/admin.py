@@ -7,7 +7,6 @@ from .models import Plan, Subscription, TelegramUser
 class TelegramUserAdmin(UserAdmin):
     model = TelegramUser
     list_display = (
-        "telegram_id",
         "chat_id",
         "telegram_username",
         "first_name",
@@ -17,14 +16,12 @@ class TelegramUserAdmin(UserAdmin):
         "is_staff",
     )
     search_fields = (
-        "telegram_id",
         "chat_id",
         "telegram_username",
         "first_name",
         "last_name",
     )
     ordering = (
-        "telegram_id",
         "chat_id",
         "telegram_username",
         "first_name",

@@ -7,7 +7,6 @@ class TelegramUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = TelegramUser
         fields = [
-            "telegram_id",
             "chat_id",
             "telegram_username",
             "first_name",

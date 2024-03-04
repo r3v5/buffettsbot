@@ -15,7 +15,7 @@ from .serializers import (
 )
 
 
-class TronConnector:
+class TronTransactionAnalyzer:
     API_ENDPOINT = os.environ.get("API_ENDPOINT")
     API_KEY = os.environ.get("API_KEY")
     STAS_TRC20_WALLET_ADDRESS = os.environ.get("STAS_TRC20_WALLET_ADDRESS")
@@ -92,7 +92,6 @@ class SubscriptionAPIView(APIView):
     permission_classes = [AllowAny]
 
     def get(self, request: HttpRequest) -> HttpResponse:
-        data = request.data
 
         # Get the username from the query parameters
         telegram_username = request.query_params.get("telegram_username")
@@ -144,7 +143,7 @@ class SubscriptionAPIView(APIView):
         # Get the price of the plan
         plan_price = plan.price
 
-        success = TronConnector.validate_tx_hash(
+        success = TronTransactionAnalyzer.validate_tx_hash(
             tx_hash=transaction_hash, plan_price=plan_price
         )
         if success:

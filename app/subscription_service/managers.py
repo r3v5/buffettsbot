@@ -5,7 +5,6 @@ from django.db import models
 class TelegramUserManager(BaseUserManager):
     def create_user(
         self,
-        telegram_id: int,
         chat_id: int,
         telegram_username: str,
         first_name: str,
@@ -13,12 +12,11 @@ class TelegramUserManager(BaseUserManager):
         at_private_group: bool,
         password=None,
     ) -> "TelegramUser":
-        if not telegram_id and not chat_id and not telegram_username:
+        if not chat_id and not telegram_username:
             raise ValueError(
                 "telegram_id field must be set\nchat_id field must be set\ntelegram_username field must be set"
             )
         user = self.model(
-            telegram_id=telegram_id,
             chat_id=chat_id,
             telegram_username=telegram_username,
             first_name=first_name,
@@ -33,7 +31,6 @@ class TelegramUserManager(BaseUserManager):
         self, telegram_username: str, chat_id: int, password=None
     ) -> "TelegramUser":
         user = self.create_user(
-            telegram_id=None,
             chat_id=chat_id,
             telegram_username=telegram_username,
             password=password,
