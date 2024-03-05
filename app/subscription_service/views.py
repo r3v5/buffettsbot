@@ -1,4 +1,5 @@
 import os
+from datetime import datetime
 
 import requests
 from django.http import HttpRequest, HttpResponse
@@ -6,71 +7,14 @@ from rest_framework import status
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from subscription_service.utils import TronTransactionAnalyzer
 
 from .models import Plan, Subscription, TelegramUser
-from .serializers import (GetSubscriptionSerializer,
-                          PostSubscriptionSerializer, TelegramUserSerializer)
-
-
-class TronTransactionAnalyzer:
-    API_ENDPOINT = os.environ.get("API_ENDPOINT")
-    API_KEY = os.environ.get("API_KEY")
-    STAS_TRC20_WALLET_ADDRESS = os.environ.get("STAS_TRC20_WALLET_ADDRESS")
-
-    @staticmethod
-    def convert_string_to_trc20(amount_str: str, decimals: int) -> int:
-        return int(int(amount_str) / (10**decimals))
-
-    @classmethod
-    def validate_tx_hash(cls, tx_hash: str, plan_price: int) -> bool:
-        is_valid = False
-        url = f"{cls.API_ENDPOINT}={tx_hash}"
-        headers = {
-            "Accept": "application/json",
-            "Content-Type": "application/json",
-            "TRON-PRO-API-KEY": f"{cls.API_KEY}",
-        }
-
-        try:
-            response = requests.get(url, headers=headers)
-            if response.status_code == 200:
-                valid_data = response.json()
-                for transfer_info in valid_data["trc20TransferInfo"]:
-                    if transfer_info["to_address"] != cls.STAS_TRC20_WALLET_ADDRESS:
-                        print(
-                            f"Stanislav Ivankin {cls.STAS_TRC20_WALLET_ADDRESS} didn't get your USDT!",
-                            is_valid,
-                        )
-                        return is_valid
-                    else:
-                        amount_usdt = cls.convert_string_to_trc20(
-                            transfer_info["amount_str"], transfer_info["decimals"]
-                        )
-                        if amount_usdt >= plan_price:
-                            result = {
-                                "tx_hash": tx_hash,
-                                "to_address": transfer_info["to_address"],
-                                "amount_usdt": amount_usdt,
-                                "subscription_price": plan_price,
-                            }
-                            is_valid = True
-                            print(result, is_valid)
-                            return is_valid
-                        else:
-                            result = {
-                                "tx_hash": tx_hash,
-                                "to_address": transfer_info["to_address"],
-                                "amount_usdt": amount_usdt,
-                                "subscription_price": plan_price,
-                            }
-                            print(result, is_valid)
-                            return is_valid
-            else:
-                print(f"Error: {response.status_code}")
-                return is_valid
-        except Exception as e:
-            print(f"Error occurred: {e}")
-            return is_valid
+from .serializers import (
+    GetSubscriptionSerializer,
+    PostSubscriptionSerializer,
+    TelegramUserSerializer,
+)
 
 
 class TelegramUserAPIView(APIView):
@@ -89,9 +33,10 @@ class SubscriptionAPIView(APIView):
     permission_classes = [AllowAny]
 
     def get(self, request: HttpRequest) -> HttpResponse:
+        data = request.data
 
         # Get the username from the query parameters
-        telegram_username = request.query_params.get("telegram_username")
+        telegram_username = data.get("telegram_username")
 
         # Find the user with the given telegram_username
         try:
@@ -154,3 +99,10 @@ class SubscriptionAPIView(APIView):
                 serializer.save()
                 return Response(serializer.data, status=status.HTTP_201_CREATED)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            response = {
+                "status": status.HTTP_400_BAD_REQUEST,
+                "message": "Transaction is not valid",
+                "success": success,
+            }
+            return Response(response, status=status.HTTP_400_BAD_REQUEST)

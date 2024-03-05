@@ -143,8 +143,3 @@ STATIC_URL = "static/"
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 AUTH_USER_MODEL = "subscription_service.TelegramUser"
-
-
-API_ENDPOINT = os.environ.get("API_ENDPOINT")
-API_KEY = os.environ.get("API_KEY")
-STAS_TRC20_WALLET_ADDRESS = os.environ.get("STAS_TRC20_WALLET_ADDRESS")

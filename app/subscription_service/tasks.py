@@ -1,29 +1,9 @@
 import os
-from typing import Union
 
-import requests
 from celery import shared_task
+from subscription_service.utils import TelegramMessageSender
 
 from .models import Subscription, TelegramUser
-
-
-class TelegramMessageSender:
-    TELEGRAM_BOT_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN")
-    TELEGRAM_PRIVATE_GROUP_ID = os.environ.get("TELEGRAM_PRIVATE_GROUP_ID")
-
-    @classmethod
-    def send_message_to_admin_of_group(
-        cls, message: str, chat_id: Union[int, str]
-    ) -> requests.Response:
-        url = f"https://api.telegram.org/bot{cls.TELEGRAM_BOT_TOKEN}/sendMessage"
-        params = {"chat_id": chat_id, "text": message}
-
-        response = requests.post(url=url, params=params)
-        if response.status_code == 200:
-            print("Message sent successfully!")
-        else:
-            print("Failed to send message:", response.text)
-        return response
 
 
 @shared_task
