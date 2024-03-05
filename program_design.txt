@@ -40,6 +40,10 @@ Program send_reminder_for_3_days_before_the_end():
 Program send_reminder_for_1_day_before_the_end():
     1. get subscriptions that will end after 1 day and prefetch with associated TelegramUser's chat_id 
     2. send message to every user by chat_id: f'Ваша подписка закончится через 1 дeнь: {end_date}'
+
+
+
+OPTIONAL
 ---------------------------------------------------------------------------------------------------------------------
 - Sending different alert about private community 
 - frequency: every 24 hours

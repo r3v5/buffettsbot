@@ -4,6 +4,7 @@ from datetime import datetime
 import requests
 from django.http import HttpRequest, HttpResponse
 from rest_framework import status
+from rest_framework.exceptions import ValidationError
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -85,20 +86,42 @@ class SubscriptionAPIView(APIView):
         # Get the price of the plan
         plan_price = plan.price
 
+        # Check if the transaction hash is already used
+        if Subscription.objects.filter(transaction_hash=transaction_hash).exists():
+            raise ValidationError("Transaction hash already used for subscription.")
+
         success = TronTransactionAnalyzer.validate_tx_hash(
             tx_hash=transaction_hash, plan_price=plan_price
         )
         if success:
-            subscription_data = {
-                "customer": user.pk,
-                "plan": plan.pk,
-                "transaction_hash": transaction_hash,
-            }
-            serializer = PostSubscriptionSerializer(data=subscription_data)
-            if serializer.is_valid():
-                serializer.save()
-                return Response(serializer.data, status=status.HTTP_201_CREATED)
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            try:
+                subscription = Subscription.objects.get(customer=user)
+                subscription.delete()
+                extended_subscription_data = {
+                    "customer": user.chat_id,
+                    "plan": plan.pk,
+                    "transaction_hash": transaction_hash,
+                }
+                serializer = PostSubscriptionSerializer(data=extended_subscription_data)
+                if serializer.is_valid():
+                    serializer.save()
+                    return Response(serializer.data, status=status.HTTP_201_CREATED)
+                else:
+                    return Response(
+                        serializer.errors, status=status.HTTP_400_BAD_REQUEST
+                    )
+            except Subscription.DoesNotExist:
+                # If the user does not have a subscription, create a new subscription
+                subscription_data = {
+                    "customer": user.chat_id,
+                    "plan": plan.pk,
+                    "transaction_hash": transaction_hash,
+                }
+                serializer = PostSubscriptionSerializer(data=subscription_data)
+                if serializer.is_valid():
+                    serializer.save()
+                    return Response(serializer.data, status=status.HTTP_201_CREATED)
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         else:
             response = {
                 "status": status.HTTP_400_BAD_REQUEST,

@@ -29,6 +29,7 @@ class TelegramUser(AbstractBaseUser, PermissionsMixin):
 
 class Plan(models.Model):
     PERIOD_CHOICES = [
+        ("4 minutes", "4 minutes"),
         ("2 days", "2 days"),
         ("1 month", "1 month"),
         ("3 months", "3 months"),
@@ -53,20 +54,34 @@ class Subscription(models.Model):
     )
     start_date = models.DateTimeField(default=timezone.now)
     end_date = models.DateTimeField(null=True, blank=True)
+    duration = models.DurationField(null=False, blank=False)
 
-    def save(self, *args: dict, **kwargs: dict) -> None:
+    def save(self, *args, **kwargs):
         if self.plan:
-            if self.plan.period == "2 days":
-                self.end_date = self.start_date + timedelta(days=2)
-            elif self.plan.period == "1 month":
-                self.end_date = self.start_date + timedelta(days=30)
-            elif self.plan.period == "3 months":
-                self.end_date = self.start_date + timedelta(days=90)
-            elif self.plan.period == "6 months":
-                self.end_date = self.start_date + timedelta(days=180)
-            elif self.plan.period == "1 year":
-                self.end_date = self.start_date + timedelta(days=365)
+            self.set_duration()
+            self.set_end_date()
         else:
             raise ValueError("A subscription must have a plan.")
 
-        super(Subscription, self).save(*args, **kwargs)
+        super().save(*args, **kwargs)
+
+    def set_duration(self):
+        if self.plan.period == "4 minutes":
+            self.duration = timedelta(minutes=4)
+        elif self.plan.period == "2 days":
+            self.duration = timedelta(days=2)
+        elif self.plan.period == "1 month":
+            self.duration = timedelta(days=30)
+        elif self.plan.period == "3 months":
+            self.duration = timedelta(days=90)
+        elif self.plan.period == "6 months":
+            self.duration = timedelta(days=180)
+        elif self.plan.period == "1 year":
+            self.duration = timedelta(days=365)
+
+    def set_end_date(self):
+        if self.start_date and self.duration:
+            self.end_date = self.start_date + self.duration
+
+    def is_expired(self):
+        return timezone.now() > self.end_date
