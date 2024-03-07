@@ -1,14 +1,12 @@
-import os
-from datetime import datetime
-
-import requests
+import pytz
 from django.http import HttpRequest, HttpResponse
+from django.utils import timezone
 from rest_framework import status
 from rest_framework.exceptions import ValidationError
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from subscription_service.utils import TronTransactionAnalyzer
+from subscription_service.utils import TelegramMessageSender, TronTransactionAnalyzer
 
 from .models import Plan, Subscription, TelegramUser
 from .serializers import (
@@ -94,9 +92,11 @@ class SubscriptionAPIView(APIView):
             tx_hash=transaction_hash, plan_price=plan_price
         )
         if success:
+            # Allow user to extend his subscription
             try:
                 subscription = Subscription.objects.get(customer=user)
                 subscription.delete()
+                user.delete_from_private_group()
                 extended_subscription_data = {
                     "customer": user.chat_id,
                     "plan": plan.pk,
@@ -104,7 +104,66 @@ class SubscriptionAPIView(APIView):
                 }
                 serializer = PostSubscriptionSerializer(data=extended_subscription_data)
                 if serializer.is_valid():
+                    user.add_to_private_group()
                     serializer.save()
+
+                    # Convert time in Moscow time zone
+                    moscow_tz = pytz.timezone("Europe/Moscow")
+
+                    # Get extended subscription
+                    extended_subscription = serializer.instance
+                    telegram_username = extended_subscription.customer.telegram_username
+                    subscription_plan = extended_subscription.plan.period
+                    subscription_price = extended_subscription.plan.price
+                    tx_hash = extended_subscription.transaction_hash
+                    subscription_start_date = (
+                        extended_subscription.start_date.astimezone(moscow_tz).strftime(
+                            "%d/%m/%Y %H:%M:%S"
+                        )
+                    )
+                    subscription_end_date = extended_subscription.end_date.astimezone(
+                        moscow_tz
+                    ).strftime("%d/%m/%Y %H:%M:%S")
+
+                    # Get the admins
+                    try:
+                        admins_of_group = TelegramUser.objects.filter(is_staff=True)
+                        print("Found users:", admins_of_group)
+                    except TelegramUser.DoesNotExist:
+                        print("Users not found.")
+
+                    for admin in admins_of_group:
+                        try:
+                            message = (
+                                TelegramMessageSender.create_message_about_keep_user(
+                                    admin_of_group=admin.telegram_username,
+                                    telegram_username=telegram_username,
+                                    subscription_start_date=subscription_start_date,
+                                    subscription_end_date=subscription_end_date,
+                                    subscription_plan=subscription_plan,
+                                    subscription_price=subscription_price,
+                                    tx_hash=tx_hash,
+                                )
+                            )
+
+                            response = (
+                                TelegramMessageSender.send_message_to_admin_of_group(
+                                    message=message, chat_id=admin.chat_id
+                                )
+                            )
+                            if response.status_code == 200:
+                                print(
+                                    f"User {telegram_username} must be kept in the group."
+                                )
+                            else:
+                                print(
+                                    f"Failed to keep user {telegram_username} in the group. Status code: {response.status_code}"
+                                )
+                        except Exception as e:
+                            print(
+                                f"Failed to keep user {telegram_username} in the group: {str(e)}"
+                            )
+
                     return Response(serializer.data, status=status.HTTP_201_CREATED)
                 else:
                     return Response(

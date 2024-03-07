@@ -7,7 +7,7 @@ from .models import Subscription, TelegramUser
 
 
 @shared_task
-def add_user_to_private_group():
+def find_new_subscriptions():
     try:
         subscriptions = Subscription.objects.filter(
             customer__at_private_group=False
@@ -23,15 +23,24 @@ def add_user_to_private_group():
     except TelegramUser.DoesNotExist:
         print("Users not found.")
 
+    # Convert time in Moscow time zone
+    moscow_tz = pytz.timezone("Europe/Moscow")
+
     for subscription in subscriptions:
         telegram_username = subscription.customer.telegram_username
-        plan = subscription.plan
-        amount_usdt = subscription.plan.price
+        subscription_plan = subscription.plan.period
+        subscription_price = subscription.plan.price
         tx_hash = subscription.transaction_hash
+        subscription_start_date = subscription.start_date.astimezone(
+            moscow_tz
+        ).strftime("%d/%m/%Y %H:%M:%S")
+        subscription_end_date = subscription.end_date.astimezone(moscow_tz).strftime(
+            "%d/%m/%Y %H:%M:%S"
+        )
 
         for admin in admins_of_group:
             try:
-                message = (
+                """message = (
                     f"Hi, {admin.telegram_username}!\n\n"
                     f"Action: 🟢 add to private group\n\n"
                     f"Transaction Details 🪪\n"
@@ -44,6 +53,16 @@ def add_user_to_private_group():
                     f"--------------------------------------\n"
                     f"Hash: https://tronscan.org/#/transaction/{tx_hash}\n\n"
                     "Click the link to copy the transaction hash."
+                )"""
+
+                message = TelegramMessageSender.create_message_about_add_user(
+                    admin_of_group=admin.telegram_username,
+                    telegram_username=telegram_username,
+                    subscription_start_date=subscription_start_date,
+                    subscription_end_date=subscription_end_date,
+                    subscription_plan=subscription_plan,
+                    subscription_price=subscription_price,
+                    tx_hash=tx_hash,
                 )
 
                 response = TelegramMessageSender.send_message_to_admin_of_group(
@@ -51,8 +70,7 @@ def add_user_to_private_group():
                 )
 
                 if response.status_code == 200:
-                    subscription.customer.at_private_group = True
-                    subscription.customer.save(update_fields=["at_private_group"])
+                    subscription.customer.add_to_private_group()
                     print(f"User {telegram_username} must be added to the group.")
                 else:
                     print(
@@ -63,7 +81,7 @@ def add_user_to_private_group():
 
 
 @shared_task
-def delete_expired_subscription():
+def delete_expired_subscriptions():
     # Get the admins
     try:
         admins_of_group = TelegramUser.objects.filter(is_staff=True)
@@ -75,9 +93,17 @@ def delete_expired_subscription():
     moscow_tz = pytz.timezone("Europe/Moscow")
 
     try:
+        # Print today's date for debugging
+        print("Today's date:", today)
+        print(f"Today'time: {timezone.now()}")
+
         expired_subscriptions = Subscription.objects.select_related(
             "customer", "plan"
         ).filter(end_date__date=today)
+
+        # Print the SQL query being executed
+        print("SQL Query:", expired_subscriptions.query)
+
         print("Found subscriptions:", expired_subscriptions)
     except Subscription.DoesNotExist:
         print("Subscriptions not found.")
@@ -97,7 +123,7 @@ def delete_expired_subscription():
 
             for admin in admins_of_group:
                 try:
-                    message = (
+                    """message = (
                         f"Hi, {admin.telegram_username}!\n\n"
                         f"Action: 🔴 delete from private group\n\n"
                         f"Subscription Details 📁\n"
@@ -114,6 +140,16 @@ def delete_expired_subscription():
                         f"--------------------------------------\n"
                         f"Hash: https://tronscan.org/#/transaction/{tx_hash}\n\n"
                         "Click the link to copy the transaction hash."
+                    )"""
+
+                    message = TelegramMessageSender.create_message_about_delete_user(
+                        admin_of_group=admin.telegram_username,
+                        telegram_username=telegram_username,
+                        subscription_start_date=subscription_start_date,
+                        subscription_end_date=subscription_end_date,
+                        subscription_plan=subscription_plan,
+                        subscription_price=subscription_price,
+                        tx_hash=tx_hash,
                     )
 
                     response = TelegramMessageSender.send_message_to_admin_of_group(
@@ -121,10 +157,12 @@ def delete_expired_subscription():
                     )
 
                     if response.status_code == 200:
-                        subscription.customer.at_private_group = False
-                        subscription.customer.save(update_fields=["at_private_group"])
                         subscription.delete()
                         print(f"{subscription} was successfully deleted.")
+
+                        subscription.customer.delete_from_private_group()
+                        """subscription.customer.at_private_group = False
+                        subscription.customer.save(update_fields=["at_private_group"])"""
                         print(
                             f"User {subscription.customer.telegram_username} must be deleted from the group."
                         )

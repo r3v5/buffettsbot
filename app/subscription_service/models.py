@@ -1,5 +1,6 @@
 from datetime import timedelta
 
+import pytz
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin
 from django.db import models
 from django.utils import timezone
@@ -25,6 +26,14 @@ class TelegramUser(AbstractBaseUser, PermissionsMixin):
 
     def __str__(self) -> str:
         return self.telegram_username
+
+    def add_to_private_group(self) -> None:
+        self.at_private_group = True
+        self.save(update_fields=["at_private_group"])
+
+    def delete_from_private_group(self) -> None:
+        self.at_private_group = False
+        self.save(update_fields=["at_private_group"])
 
 
 class Plan(models.Model):
@@ -67,17 +76,17 @@ class Subscription(models.Model):
 
     def set_duration(self):
         if self.plan.period == "4 minutes":
-            self.duration = timedelta(minutes=4)
+            self.duration = timezone.timedelta(minutes=4)
         elif self.plan.period == "2 days":
-            self.duration = timedelta(days=2)
+            self.duration = timezone.timedelta(days=2)
         elif self.plan.period == "1 month":
-            self.duration = timedelta(days=30)
+            self.duration = timezone.timedelta(days=30)
         elif self.plan.period == "3 months":
-            self.duration = timedelta(days=90)
+            self.duration = timezone.timedelta(days=90)
         elif self.plan.period == "6 months":
-            self.duration = timedelta(days=180)
+            self.duration = timezone.timedelta(days=180)
         elif self.plan.period == "1 year":
-            self.duration = timedelta(days=365)
+            self.duration = timezone.timedelta(days=365)
 
     def set_end_date(self):
         if self.start_date and self.duration:

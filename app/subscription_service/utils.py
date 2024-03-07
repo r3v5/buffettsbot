@@ -4,6 +4,8 @@ from typing import Union
 
 import requests
 
+from .models import TelegramUser
+
 
 class TronTransactionAnalyzer:
     API_ENDPOINT = os.environ.get("API_ENDPOINT")
@@ -118,3 +120,108 @@ class TelegramMessageSender:
         else:
             print("Failed to send message:", response.text)
         return response
+
+    def create_message_about_add_user(
+        admin_of_group: TelegramUser,
+        telegram_username: str,
+        subscription_start_date: str,
+        subscription_end_date: str,
+        subscription_plan: str,
+        subscription_price: int,
+        tx_hash: str,
+    ) -> str:
+        """message = (
+            f"Hi, {admin_of_group}!\n\n"
+            f"Action: 🟢 add to private group\n\n"
+            f"Transaction Details 🪪\n"
+            f"--------------------------------------\n"
+            f"User: @{telegram_username}\n"
+            f"--------------------------------------\n"
+            f"Transferred: {amount_usdt} USDT\n"
+            f"--------------------------------------\n"
+            f"Subscription plan: {plan}\n"
+            f"--------------------------------------\n"
+            f"Hash: https://tronscan.org/#/transaction/{tx_hash}\n\n"
+            "Click the link to copy the transaction hash."
+        )"""
+
+        message = (
+            f"Hi, {admin_of_group}!\n\n"
+            f"Action: 🟢 add to private group\n\n"
+            f"Subscription Details 📁\n"
+            f"--------------------------------------\n"
+            f"User: @{telegram_username}\n"
+            f"--------------------------------------\n"
+            f"Purchased on: {subscription_start_date}\n"
+            f"--------------------------------------\n"
+            f"Expired on: {subscription_end_date}\n"
+            f"--------------------------------------\n"
+            f"Subscription plan: {subscription_plan}\n"
+            f"--------------------------------------\n"
+            f"Subscription price: {subscription_price} USDT\n"
+            f"--------------------------------------\n"
+            f"Hash: https://tronscan.org/#/transaction/{tx_hash}\n\n"
+            "Click the link to copy the transaction hash."
+        )
+
+        return message
+
+    def create_message_about_delete_user(
+        admin_of_group: TelegramUser,
+        telegram_username: str,
+        subscription_start_date: str,
+        subscription_end_date: str,
+        subscription_plan: str,
+        subscription_price: int,
+        tx_hash: str,
+    ) -> str:
+        message = (
+            f"Hi, {admin_of_group}!\n\n"
+            f"Action: 🔴 delete from private group\n\n"
+            f"Subscription Details 📁\n"
+            f"--------------------------------------\n"
+            f"User: @{telegram_username}\n"
+            f"--------------------------------------\n"
+            f"Purchased on: {subscription_start_date}\n"
+            f"--------------------------------------\n"
+            f"Expired on: {subscription_end_date}\n"
+            f"--------------------------------------\n"
+            f"Subscription plan: {subscription_plan}\n"
+            f"--------------------------------------\n"
+            f"Subscription price: {subscription_price} USDT\n"
+            f"--------------------------------------\n"
+            f"Hash: https://tronscan.org/#/transaction/{tx_hash}\n\n"
+            "Click the link to copy the transaction hash."
+        )
+
+        return message
+
+    def create_message_about_keep_user(
+        admin_of_group: TelegramUser,
+        telegram_username: str,
+        subscription_start_date: str,
+        subscription_end_date: str,
+        subscription_plan: str,
+        subscription_price: int,
+        tx_hash: str,
+    ) -> str:
+        message = (
+            f"Hi, {admin_of_group}!\n\n"
+            f"Action: 🟡 keep in private group\n\n"
+            f"Subscription Details 📁\n"
+            f"--------------------------------------\n"
+            f"User: @{telegram_username}\n"
+            f"--------------------------------------\n"
+            f"Purchased on: {subscription_start_date}\n"
+            f"--------------------------------------\n"
+            f"Expired on: {subscription_end_date}\n"
+            f"--------------------------------------\n"
+            f"Subscription plan: {subscription_plan}\n"
+            f"--------------------------------------\n"
+            f"Subscription price: {subscription_price} USDT\n"
+            f"--------------------------------------\n"
+            f"Hash: https://tronscan.org/#/transaction/{tx_hash}\n\n"
+            "Click the link to copy the transaction hash."
+        )
+
+        return message

@@ -60,3 +60,16 @@ Additional models:
 Alert:
     text: CharField
     photo: ImageField
+
+
+
+
+Test workflow:
+1. Create superuser
+2. Create 4 minutes plan
+3. Register new user
+4. Buy subscription
+5. Get subscription
+6. Extend subscription after 2 minutes
+7. Check if subscription end_date was extended
+8. Wait until subscription will end and check if subscription will successfully deleted and user must be deleted from group
