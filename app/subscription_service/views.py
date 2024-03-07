@@ -1,19 +1,17 @@
 import pytz
 from django.http import HttpRequest, HttpResponse
-from django.utils import timezone
 from rest_framework import status
 from rest_framework.exceptions import ValidationError
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from subscription_service.utils import TelegramMessageSender, TronTransactionAnalyzer
+
+from subscription_service.utils import (TelegramMessageSender,
+                                        TronTransactionAnalyzer)
 
 from .models import Plan, Subscription, TelegramUser
-from .serializers import (
-    GetSubscriptionSerializer,
-    PostSubscriptionSerializer,
-    TelegramUserSerializer,
-)
+from .serializers import (GetSubscriptionSerializer,
+                          PostSubscriptionSerializer, TelegramUserSerializer)
 
 
 class TelegramUserAPIView(APIView):
@@ -32,10 +30,9 @@ class SubscriptionAPIView(APIView):
     permission_classes = [AllowAny]
 
     def get(self, request: HttpRequest) -> HttpResponse:
-        data = request.data
 
         # Get the username from the query parameters
-        telegram_username = data.get("telegram_username")
+        telegram_username = request.query_params.get("telegram_username")
 
         # Find the user with the given telegram_username
         try:
@@ -146,10 +143,8 @@ class SubscriptionAPIView(APIView):
                                 )
                             )
 
-                            response = (
-                                TelegramMessageSender.send_message_to_admin_of_group(
-                                    message=message, chat_id=admin.chat_id
-                                )
+                            response = TelegramMessageSender.send_message_to_chat(
+                                message=message, chat_id=admin.chat_id
                             )
                             if response.status_code == 200:
                                 print(

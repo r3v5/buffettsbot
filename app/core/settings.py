@@ -143,3 +143,5 @@ STATIC_URL = "static/"
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 AUTH_USER_MODEL = "subscription_service.TelegramUser"
+
+MEDIA_ROOT = os.path.join(BASE_DIR, "media")

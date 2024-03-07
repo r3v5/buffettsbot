@@ -105,10 +105,9 @@ class TronTransactionAnalyzer:
 
 class TelegramMessageSender:
     TELEGRAM_BOT_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN")
-    TELEGRAM_PRIVATE_GROUP_ID = os.environ.get("TELEGRAM_PRIVATE_GROUP_ID")
 
     @classmethod
-    def send_message_to_admin_of_group(
+    def send_message_to_chat(
         cls, message: str, chat_id: Union[int, str]
     ) -> requests.Response:
         url = f"https://api.telegram.org/bot{cls.TELEGRAM_BOT_TOKEN}/sendMessage"
@@ -121,6 +120,21 @@ class TelegramMessageSender:
             print("Failed to send message:", response.text)
         return response
 
+    @classmethod
+    def send_message_with_photo_to_chat(
+        cls, message: str, photo_path: str, chat_id: Union[int, str]
+    ) -> requests.Response:
+        url = f"https://api.telegram.org/bot{cls.TELEGRAM_BOT_TOKEN}/sendPhoto"
+        files = {"photo": open(photo_path, "rb")}
+        params = {"chat_id": chat_id, "caption": message}
+
+        response = requests.post(url=url, params=params, files=files)
+        if response.status_code == 200:
+            print("Message with photo sent successfully!")
+        else:
+            print("Failed to send message with photo:", response.text)
+        return response
+
     def create_message_about_add_user(
         admin_of_group: TelegramUser,
         telegram_username: str,
@@ -130,20 +144,6 @@ class TelegramMessageSender:
         subscription_price: int,
         tx_hash: str,
     ) -> str:
-        """message = (
-            f"Hi, {admin_of_group}!\n\n"
-            f"Action: 🟢 add to private group\n\n"
-            f"Transaction Details 🪪\n"
-            f"--------------------------------------\n"
-            f"User: @{telegram_username}\n"
-            f"--------------------------------------\n"
-            f"Transferred: {amount_usdt} USDT\n"
-            f"--------------------------------------\n"
-            f"Subscription plan: {plan}\n"
-            f"--------------------------------------\n"
-            f"Hash: https://tronscan.org/#/transaction/{tx_hash}\n\n"
-            "Click the link to copy the transaction hash."
-        )"""
 
         message = (
             f"Hi, {admin_of_group}!\n\n"
@@ -154,7 +154,7 @@ class TelegramMessageSender:
             f"--------------------------------------\n"
             f"Purchased on: {subscription_start_date}\n"
             f"--------------------------------------\n"
-            f"Expired on: {subscription_end_date}\n"
+            f"Will expire on: {subscription_end_date}\n"
             f"--------------------------------------\n"
             f"Subscription plan: {subscription_plan}\n"
             f"--------------------------------------\n"
@@ -212,9 +212,9 @@ class TelegramMessageSender:
             f"--------------------------------------\n"
             f"User: @{telegram_username}\n"
             f"--------------------------------------\n"
-            f"Purchased on: {subscription_start_date}\n"
+            f"Extended on: {subscription_start_date}\n"
             f"--------------------------------------\n"
-            f"Expired on: {subscription_end_date}\n"
+            f"Will expire on: {subscription_end_date}\n"
             f"--------------------------------------\n"
             f"Subscription plan: {subscription_plan}\n"
             f"--------------------------------------\n"
@@ -222,6 +222,36 @@ class TelegramMessageSender:
             f"--------------------------------------\n"
             f"Hash: https://tronscan.org/#/transaction/{tx_hash}\n\n"
             "Click the link to copy the transaction hash."
+        )
+
+        return message
+
+    def create_message_about_reminder(
+        telegram_username: str,
+        subscription_plan: str,
+        subscription_start_date: str,
+        subscription_end_date: str,
+        subscription_price: int,
+        day: int,
+        syntax_word: str,
+    ):
+        message = (
+            f"Привет, @{telegram_username}!\n\n"
+            f"Пишу с напоминанием о том, что у тебя заканчивается подписка через {day} {syntax_word} на закрытое сообщество «Баффеты на Уораннах»\n\n"
+            f"Продли прямо сейчас, что бы внезапно не потерять информацию о закрытии ранее открытых позиций. А также не пропустить новую точку входа.\n\n"
+            f"Вы можете продлить уже купленную вами раннее подписку. Вот ее детали:\n"
+            f"-------------------------------------\n"
+            f"План подписки: {subscription_plan}\n"
+            f"-------------------------------------\n"
+            f"Дата покупки: {subscription_start_date}\n"
+            f"-------------------------------------\n"
+            f"Дата окончания: {subscription_end_date}\n"
+            f"-------------------------------------\n"
+            f"Цена: {subscription_price} USDT\n"
+            f"-------------------------------------\n\n"
+            f"Вы также можете изменить план подписки просто выбрав другой тариф и оплатив его. Таким образом подписка будет продлена согласно новому плану.\n\n"
+            f"Для нашей команды очень важно получить обратную связь, на пути построения типового сообщества по крипте. Заполни анкету, если конечно ты ранее этого не делал.\n\n"
+            f"По всем вопросам, пожалуйста, обращайтесь сюда @BaffetConcierge"
         )
 
         return message

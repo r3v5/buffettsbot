@@ -1,6 +1,7 @@
 import os
 
 from celery import Celery
+from celery.schedules import crontab
 from django.conf import settings
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "core.settings")
@@ -12,13 +13,25 @@ app.conf.broker_url = settings.CELERY_BROKER_URL
 
 # Configure Celery Beat
 app.conf.beat_schedule = {
-    "add_users_to_private_group": {
+    "find_new_subscriptions": {
         "task": "subscription_service.tasks.find_new_subscriptions",
         "schedule": 10.0,
     },
-    "delete_subscription": {
+    "delete_expired_subscriptions": {
         "task": "subscription_service.tasks.delete_expired_subscriptions",
         "schedule": 10.0,
+    },
+    "notify_about_expiring_subscriptions_1_day": {
+        "task": "subscription_service.tasks.notify_about_expiring_subscriptions_1_day",
+        "schedule": 60.0,  # in test we keep 1 min but require crontab(minute=0, hour=0)
+    },
+    "notify_about_expiring_subscriptions_3_days": {
+        "task": "subscription_service.tasks.notify_about_expiring_subscriptions_3_days",
+        "schedule": crontab(minute=0, hour=0),
+    },
+    "notify_about_expiring_subscriptions_7_days": {
+        "task": "subscription_service.tasks.notify_about_expiring_subscriptions_7_days",
+        "schedule": crontab(minute=0, hour=0),
     },
 }
 

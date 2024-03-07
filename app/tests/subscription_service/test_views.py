@@ -1,4 +1,4 @@
-import datetime
+from unittest.mock import patch
 
 import pytest
 from django.urls import reverse
@@ -44,56 +44,83 @@ def test_invalid_telegram_user():
 
 
 @pytest.mark.django_db
-def test_valid_create_subscription():
-    # Create sample data
-    TelegramUser.objects.create(chat_id=2342523532, telegram_username="test_user")
-    Plan.objects.create(period="2 days", price=19)
+def test_valid_subscription_create():
+    # Create necessary test data
+    user = TelegramUser.objects.create(
+        chat_id=123456,
+        telegram_username="test_user",
+    )
+    plan = Plan.objects.create(period="1 month", price=10)
     subscriptions = Subscription.objects.all()
     assert len(subscriptions) == 0
 
-    # Prepare data for POST request
-    data = {
-        "telegram_username": "test_user",
-        "plan": "2 days",
-        "transaction_hash": "357648462a7b472c7ac1123550023a0674aca4849fc385bd67e3a51aeb492564",
-    }
+    # Mock TronTransactionAnalyzer's response
+    with patch(
+        "subscription_service.utils.TronTransactionAnalyzer.validate_tx_hash"
+    ) as mock_validate_tx_hash:
+        mock_validate_tx_hash.return_value = True  # Mock the response as successful
 
-    client = APIClient()
-    url = reverse("manage-subscription")
+        # Make a POST request to the API endpoint
+        client = APIClient()
+        url = reverse(
+            "manage-subscription"
+        )  # Assuming you have a URL name for the subscription create endpoint
+        data = {
+            "telegram_username": user.telegram_username,
+            "plan": plan.period,
+            "transaction_hash": "a2497862faf68c54e6b745f9b84fcb4e6a736b3cd108696590b7ba8e3910b170",
+        }
+        response = client.post(url, data, format="json")
 
-    # Make POST request
-    response = client.post(url, data, format="json")
+        assert response.status_code == status.HTTP_201_CREATED
+        subscriptions = Subscription.objects.all()
+        assert len(subscriptions) == 1
 
-    assert response.status_code == status.HTTP_201_CREATED
-
-    subscriptions = Subscription.objects.all()
-    assert len(subscriptions) == 1
+        # Check if user's subscription is created
+        assert Subscription.objects.filter(customer=user, plan=plan).exists()
 
 
 @pytest.mark.django_db
 def test_invalid_create_subscription():
-    # Create sample data
-    TelegramUser.objects.create(chat_id=2342523532, telegram_username="test_user")
-    Plan.objects.create(period="2 days", price=19)
-    subscriptions = Subscription.objects.all()
-    assert len(subscriptions) == 0
+    # Create necessary test data
+    user = TelegramUser.objects.create(
+        chat_id=123456,
+        telegram_username="test_user",
+        first_name="Test",
+        last_name="User",
+        at_private_group=True,
+        is_staff=False,
+    )
+    plan = Plan.objects.create(period="1 month", price=10)
 
-    # Prepare data for POST request
-    data = {
-        "telegram_username": "test_user",
-        "transaction_hash": "357648462a7b472c7ac1123550023a0674aca4849fc385bd67e3a51aeb492564",
-    }
+    # Mock TronTransactionAnalyzer's response
+    with patch(
+        "subscription_service.utils.TronTransactionAnalyzer.validate_tx_hash"
+    ) as mock_validate_tx_hash:
+        mock_validate_tx_hash.return_value = False
 
-    client = APIClient()
-    url = reverse("manage-subscription")
+        # Make a POST request to the API endpoint
+        client = APIClient()
+        url = reverse(
+            "manage-subscription"
+        )  # Assuming you have a URL name for the subscription create endpoint
+        data = {
+            "telegram_username": "test_user",
+            "plan": "1 month",
+            "transaction_hash": "your_invalid_transaction_hash_here",
+        }
+        response = client.post(url, data, format="json")
 
-    # Make POST request
-    response = client.post(url, data, format="json")
+        # Assertions
+        assert (
+            response.status_code == 400
+        )  # Check if response status code is as expected
 
-    assert response.status_code == status.HTTP_404_NOT_FOUND
+        # Check if subscription is not created
+        assert not Subscription.objects.filter(customer=user, plan=plan).exists()
 
-    subscriptions = Subscription.objects.all()
-    assert len(subscriptions) == 0
+        # Check if the correct error message is returned in the response
+        assert response.data["message"] == "Transaction is not valid"
 
 
 @pytest.mark.django_db
@@ -102,9 +129,9 @@ def test_valid_get_subscription():
     user = TelegramUser.objects.create(
         chat_id=92412523532,
         telegram_username="test_user",
-        first_name="Test",
-        last_name="User",
     )
+
+    print(f"User: {user}")
 
     # Create a Plan
     plan = Plan.objects.create(period="2 days", price=19)
@@ -115,8 +142,9 @@ def test_valid_get_subscription():
         plan=plan,
         transaction_hash="0x123456789abcdef",
         start_date=timezone.now(),
-        end_date=timezone.now() + datetime.timedelta(days=2),
     )
+
+    print(f"User have subscription: {Subscription.objects.get(customer=user)}")
 
     # Convert subscription.start_date to the local time zone
     local_start_date = localtime(subscription.start_date)

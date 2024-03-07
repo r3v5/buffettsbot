@@ -1,6 +1,5 @@
 from datetime import timedelta
 
-import pytz
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin
 from django.db import models
 from django.utils import timezone
@@ -38,7 +37,6 @@ class TelegramUser(AbstractBaseUser, PermissionsMixin):
 
 class Plan(models.Model):
     PERIOD_CHOICES = [
-        ("4 minutes", "4 minutes"),
         ("2 days", "2 days"),
         ("1 month", "1 month"),
         ("3 months", "3 months"),
@@ -75,22 +73,21 @@ class Subscription(models.Model):
         super().save(*args, **kwargs)
 
     def set_duration(self):
-        if self.plan.period == "4 minutes":
-            self.duration = timezone.timedelta(minutes=4)
-        elif self.plan.period == "2 days":
-            self.duration = timezone.timedelta(days=2)
+        if self.plan.period == "2 days":
+            self.duration = timedelta(days=2)
+
         elif self.plan.period == "1 month":
-            self.duration = timezone.timedelta(days=30)
+            self.duration = timedelta(days=30)
+
         elif self.plan.period == "3 months":
-            self.duration = timezone.timedelta(days=90)
+            self.duration = timedelta(days=90)
+
         elif self.plan.period == "6 months":
-            self.duration = timezone.timedelta(days=180)
+            self.duration = timedelta(days=180)
+
         elif self.plan.period == "1 year":
-            self.duration = timezone.timedelta(days=365)
+            self.duration = timedelta(days=365)
 
     def set_end_date(self):
         if self.start_date and self.duration:
             self.end_date = self.start_date + self.duration
-
-    def is_expired(self):
-        return timezone.now() > self.end_date
