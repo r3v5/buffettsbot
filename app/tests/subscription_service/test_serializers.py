@@ -3,11 +3,12 @@ from datetime import datetime, timedelta
 import pytest
 import pytz
 from django.utils import timezone
-
 from subscription_service.models import Plan, Subscription, TelegramUser
-from subscription_service.serializers import (GetSubscriptionSerializer,
-                                              PostSubscriptionSerializer,
-                                              TelegramUserSerializer)
+from subscription_service.serializers import (
+    GetSubscriptionSerializer,
+    PostSubscriptionSerializer,
+    TelegramUserSerializer,
+)
 
 
 @pytest.mark.django_db

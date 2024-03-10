@@ -3,13 +3,14 @@ from unittest.mock import patch
 
 import pytest
 from django.utils import timezone
-
 from subscription_service.models import Plan, Subscription, TelegramUser
 from subscription_service.tasks import (
-    delete_expired_subscriptions, find_new_subscriptions,
+    delete_expired_subscriptions,
+    find_new_subscriptions,
     notify_about_expiring_subscriptions_1_day,
     notify_about_expiring_subscriptions_3_days,
-    notify_about_expiring_subscriptions_7_days)
+    notify_about_expiring_subscriptions_7_days,
+)
 
 
 @pytest.mark.django_db

@@ -3,9 +3,7 @@ from datetime import datetime, timedelta
 from unittest.mock import patch
 
 import pytest
-
-from subscription_service.views import (TelegramMessageSender,
-                                        TronTransactionAnalyzer)
+from subscription_service.views import TelegramMessageSender, TronTransactionAnalyzer
 
 
 @pytest.mark.django_db

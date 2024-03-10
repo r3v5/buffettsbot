@@ -23,7 +23,7 @@ app.conf.beat_schedule = {
     },
     "notify_about_expiring_subscriptions_1_day": {
         "task": "subscription_service.tasks.notify_about_expiring_subscriptions_1_day",
-        "schedule": 60.0,  # in test we keep 1 min but require crontab(minute=0, hour=0)
+        "schedule": crontab(minute=0, hour=0),
     },
     "notify_about_expiring_subscriptions_3_days": {
         "task": "subscription_service.tasks.notify_about_expiring_subscriptions_3_days",
