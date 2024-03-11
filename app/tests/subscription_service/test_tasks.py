@@ -3,6 +3,7 @@ from unittest.mock import patch
 
 import pytest
 from django.utils import timezone
+
 from subscription_service.models import Plan, Subscription, TelegramUser
 from subscription_service.tasks import (
     delete_expired_subscriptions,

@@ -5,6 +5,7 @@ import pytz
 from celery import shared_task
 from django.conf import settings
 from django.utils import timezone
+
 from subscription_service.utils import TelegramMessageSender
 
 from .models import Subscription, TelegramUser

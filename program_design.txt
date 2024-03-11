@@ -43,26 +43,6 @@ Program send_reminder_for_1_day_before_the_end():
 
 
 
-OPTIONAL
----------------------------------------------------------------------------------------------------------------------
-- Sending different alert about private community 
-- frequency: every 24 hours
-
-Program send_alert_from_private_group():
-    1. Try to fetch some alert from Alert table in db
-    2. If alert exists, get object of Alert else return response 404 NOT FOUND
-    3. get TelegramUser's chat_id filter at_private_group = False
-    4. send object of Alert to all chat_ids of users
-    5. delete object of Alert
-------------------------------------------------------------------------------------------------------------------------
-Additional models:
-------------------------------------------------------------------------------------------------------------------------
-Alert:
-    text: CharField
-    photo: ImageField
-
-
-
 
 Test workflow:
 1. Create superuser
