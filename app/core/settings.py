@@ -16,6 +16,12 @@ DEBUG = int(os.environ.get("DEBUG", default=0))
 
 ALLOWED_HOSTS = os.environ.get("DJANGO_ALLOWED_HOSTS").split(" ")
 
+CSRF_TRUSTED_ORIGINS = ["http://localhost:1337"]
+
+CORS_ALLOW_ALL_ORIGINS = True
+
+CORS_ORIGIN_WHITELIST = ["http://localhost:1337"]
+
 
 # Application definition
 
@@ -29,7 +35,7 @@ INSTALLED_APPS = [
     # third-party packages
     "rest_framework",
     "cachalot",
-    "drf_yasg",
+    "corsheaders",
     # apps
     "subscription_service",
 ]
@@ -41,7 +47,12 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "corsheaders.middleware.CorsMiddleware",
 ]
+
+# Remove CsrfViewMiddleware for Django admin views
+if "django.middleware.csrf.CsrfViewMiddleware" in MIDDLEWARE:
+    MIDDLEWARE.remove("django.middleware.csrf.CsrfViewMiddleware")
 
 ROOT_URLCONF = "core.urls"
 
@@ -135,7 +146,8 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
 
-STATIC_URL = "static/"
+STATIC_URL = "/static/"
+STATIC_ROOT = BASE_DIR / "staticfiles"
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
@@ -144,9 +156,8 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 AUTH_USER_MODEL = "subscription_service.TelegramUser"
 
+MEDIA_URL = "/media/"
 MEDIA_ROOT = os.path.join(BASE_DIR, "media")
-
-SWAGGER_SETTINGS = {"USE_SESSION_AUTH": False, "SECURITY_DEFINITIONS": None}
 
 
 REST_FRAMEWORK = {
