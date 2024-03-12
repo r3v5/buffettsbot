@@ -1,0 +1,73 @@
+version: '3.8'
+
+services:
+  subscriptions-api:
+    build: ./app
+    command: python manage.py runserver 0.0.0.0:8000
+    volumes:
+      - ./app/:/usr/src/app/
+    ports:
+      - 8000:8000
+    env_file:
+      - ./.env.dev
+    depends_on:
+      - subscriptions-db
+  
+  subscriptions-db:
+    image: postgres:15
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+    restart: always
+    env_file:
+      - ./.env.dev
+  
+  redis:
+    image: redis:7.2.4-alpine
+    hostname: redis
+  
+  worker:
+    build: ./app
+    hostname: worker
+    entrypoint: celery
+    command: -A celery_app.app worker --loglevel=info
+    volumes:
+      - ./app/:/usr/src/app/
+    links:
+      - redis
+    depends_on:
+      - redis
+      - subscriptions-db
+    env_file:
+      - ./.env.dev
+  
+  celery-beat:
+    build: ./app
+    hostname: celery-beat
+    entrypoint: celery
+    command: -A celery_app.app beat --loglevel=info
+    volumes:
+      - ./app/:/usr/src/app/
+    depends_on:
+      - redis
+      - subscriptions-db
+    env_file:
+      - ./.env.dev
+  
+  flower:
+    build: ./app
+    hostname: flower
+    entrypoint: celery
+    command: -A celery_app.app flower
+    volumes:
+      - ./app/:/usr/src/app/
+    links:
+      - redis
+    depends_on:
+      - redis
+    env_file:
+      - ./.env.dev
+    ports:
+      - 5555:5555
+
+volumes:
+  postgres_data:
