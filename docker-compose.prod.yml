@@ -2,16 +2,30 @@ version: '3.8'
 
 services:
   subscriptions-api:
-    build: ./app
-    command: python manage.py runserver 0.0.0.0:8000
+    build:
+      context: ./app
+      dockerfile: Dockerfile.prod
+    command: gunicorn core.wsgi:application --bind 0.0.0.0:8000
     volumes:
+      - static_volume:/home/app/subscriptions-api/staticfiles
+      - media_volume:/home/app/subscriptions-api/mediafiles
       - ./app/:/usr/src/app/
-    ports:
-      - 8000:8000
+    expose:
+      - 8000
     env_file:
-      - ./.env.dev
+      - ./.env.prod
     depends_on:
       - subscriptions-db
+  
+  nginx:
+    build: ./nginx
+    volumes:
+      - static_volume:/home/app/subscriptions-api/staticfiles
+      - media_volume:/home/app/subscriptions-api/mediafiles
+    ports:
+      - 1337:80
+    depends_on:
+      - subscriptions-api
   
   subscriptions-db:
     image: postgres:15
@@ -19,14 +33,16 @@ services:
       - postgres_data:/var/lib/postgresql/data/
     restart: always
     env_file:
-      - ./.env.dev
+      - ./.env.prod
   
   redis:
     image: redis:7.2.4-alpine
     hostname: redis
   
   worker:
-    build: ./app
+    build:
+      context: ./app
+      dockerfile: Dockerfile.prod
     hostname: worker
     entrypoint: celery
     command: -A celery_app.app worker --loglevel=info
@@ -38,10 +54,12 @@ services:
       - redis
       - subscriptions-db
     env_file:
-      - ./.env.dev
+      - ./.env.prod
   
   celery-beat:
-    build: ./app
+    build:
+      context: ./app
+      dockerfile: Dockerfile.prod
     hostname: celery-beat
     entrypoint: celery
     command: -A celery_app.app beat --loglevel=info
@@ -51,23 +69,9 @@ services:
       - redis
       - subscriptions-db
     env_file:
-      - ./.env.dev
-  
-  flower:
-    build: ./app
-    hostname: flower
-    entrypoint: celery
-    command: -A celery_app.app flower
-    volumes:
-      - ./app/:/usr/src/app/
-    links:
-      - redis
-    depends_on:
-      - redis
-    env_file:
-      - ./.env.dev
-    ports:
-      - 5555:5555
-
+      - ./.env.prod
+ 
 volumes:
   postgres_data:
+  static_volume:
+  media_volume:
