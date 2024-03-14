@@ -16,11 +16,11 @@ DEBUG = int(os.environ.get("DEBUG", default=0))
 
 ALLOWED_HOSTS = os.environ.get("DJANGO_ALLOWED_HOSTS").split(" ")
 
-CSRF_TRUSTED_ORIGINS = ["http://localhost:1337"]
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+
+CSRF_TRUSTED_ORIGINS = os.environ.get("CSRF_TRUSTED_ORIGINS").split(" ")
 
 CORS_ALLOW_ALL_ORIGINS = True
-
-CORS_ORIGIN_WHITELIST = ["http://localhost:1337"]
 
 
 # Application definition

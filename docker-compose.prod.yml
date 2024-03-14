@@ -18,14 +18,34 @@ services:
       - subscriptions-db
   
   nginx:
+    container_name: nginx
     build: ./nginx
+    restart: always
     volumes:
       - static_volume:/home/app/subscriptions-api/staticfiles
       - media_volume:/home/app/subscriptions-api/mediafiles
+      - certs:/etc/nginx/certs
+      - html:/usr/share/nginx/html
+      - vhost:/etc/nginx/vhost.d
+      - /var/run/docker.sock:/tmp/docker.sock:ro
     ports:
-      - 1337:80
+      - 443:443
+      - 80:80
     depends_on:
       - subscriptions-api
+  
+  acme-companion:
+    image: nginxproxy/acme-companion
+    env_file:
+      - ./.env.prod
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - certs:/etc/nginx/certs
+      - html:/usr/share/nginx/html
+      - vhost:/etc/nginx/vhost.d
+      - acme:/etc/acme.sh
+    depends_on:
+      - nginx
   
   subscriptions-db:
     image: postgres:15
@@ -75,3 +95,7 @@ volumes:
   postgres_data:
   static_volume:
   media_volume:
+  certs:
+  html:
+  vhost:
+  acme:
