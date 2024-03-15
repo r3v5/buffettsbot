@@ -1,5 +1,7 @@
 import pytz
 from django.http import HttpRequest, HttpResponse
+from drf_yasg import openapi
+from drf_yasg.utils import swagger_auto_schema
 from rest_framework import status
 from rest_framework.exceptions import ValidationError
 from rest_framework.permissions import AllowAny
@@ -19,6 +21,30 @@ class TelegramUserAPIView(APIView):
     permission_classes = [AllowAny]
     authentication_classes = ()
 
+    @swagger_auto_schema(
+        request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            properties={
+                "chat_id": openapi.Schema(
+                    type=openapi.TYPE_INTEGER,
+                    description="Chat id of a Telegram user",
+                ),
+                "telegram_username": openapi.Schema(
+                    type=openapi.TYPE_STRING,
+                    description="The username of a Telegram user",
+                ),
+                "first_name": openapi.Schema(
+                    type=openapi.TYPE_STRING,
+                    description="First name of a Telegram user",
+                ),
+                "last_name": openapi.Schema(
+                    type=openapi.TYPE_STRING,
+                    description="Last name of a Telegram user",
+                ),
+            },
+        ),
+        operation_description="Create a Telegram User",
+    )
     def post(self, request: HttpRequest) -> HttpResponse:
         serializer = TelegramUserSerializer(data=request.data)
         if serializer.is_valid():
@@ -32,6 +58,17 @@ class SubscriptionAPIView(APIView):
     permission_classes = [AllowAny]
     authentication_classes = ()
 
+    @swagger_auto_schema(
+        manual_parameters=[
+            openapi.Parameter(
+                "telegram_username",
+                openapi.IN_QUERY,
+                description="The username of a Telegram user",
+                type=openapi.TYPE_STRING,
+            )
+        ],
+        operation_description="Get a subscription",
+    )
     def get(self, request: HttpRequest) -> HttpResponse:
 
         # Get the username from the query parameters
@@ -57,6 +94,26 @@ class SubscriptionAPIView(APIView):
         serializer = GetSubscriptionSerializer(instance=subscription)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
+    @swagger_auto_schema(
+        request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            properties={
+                "telegram_username": openapi.Schema(
+                    type=openapi.TYPE_STRING,
+                    description="The username of a Telegram user.",
+                ),
+                "plan": openapi.Schema(
+                    type=openapi.TYPE_STRING,
+                    description="The name of the plan for the subscription.",
+                ),
+                "transaction_hash": openapi.Schema(
+                    type=openapi.TYPE_STRING,
+                    description="The transaction hash for the subscription.",
+                ),
+            },
+        ),
+        operation_description="Buy a subscription",
+    )
     def post(self, request: HttpRequest) -> HttpResponse:
         data = request.data
 

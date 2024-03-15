@@ -36,6 +36,7 @@ INSTALLED_APPS = [
     "rest_framework",
     "cachalot",
     "corsheaders",
+    "drf_yasg",
     # apps
     "subscription_service",
 ]
@@ -166,3 +167,5 @@ REST_FRAMEWORK = {
     ),
     "DEFAULT_PERMISSION_CLASSES": ("rest_framework.permissions.IsAuthenticated",),
 }
+
+SWAGGER_SETTINGS = {"USE_SESSION_AUTH": False, "SECURITY_DEFINITIONS": None}
