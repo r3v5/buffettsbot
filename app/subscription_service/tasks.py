@@ -5,7 +5,6 @@ import pytz
 from celery import shared_task
 from django.conf import settings
 from django.utils import timezone
-
 from subscription_service.utils import TelegramMessageSender
 
 from .models import Subscription, TelegramUser
@@ -189,7 +188,7 @@ def notify_about_expiring_subscriptions_1_day() -> None:
                     message=message,
                     photo_path=os.path.join(
                         settings.MEDIA_ROOT,
-                        "buffets-on-crows.jpg",
+                        "1-day.jpg",
                     ),
                     chat_id=chat_id,
                 )
@@ -265,8 +264,13 @@ def notify_about_expiring_subscriptions_3_days() -> None:
                     syntax_word="дня",
                 )
 
-                response = TelegramMessageSender.send_message_to_chat(
-                    message=message, chat_id=chat_id
+                response = TelegramMessageSender.send_message_with_photo_to_chat(
+                    message=message,
+                    photo_path=os.path.join(
+                        settings.MEDIA_ROOT,
+                        "3-days.jpg",
+                    ),
+                    chat_id=chat_id,
                 )
 
                 if response.status_code == 200:
@@ -340,8 +344,13 @@ def notify_about_expiring_subscriptions_7_days() -> None:
                     syntax_word="дней",
                 )
 
-                response = TelegramMessageSender.send_message_to_chat(
-                    message=message, chat_id=chat_id
+                response = TelegramMessageSender.send_message_with_photo_to_chat(
+                    message=message,
+                    photo_path=os.path.join(
+                        settings.MEDIA_ROOT,
+                        "7-days.jpg",
+                    ),
+                    chat_id=chat_id,
                 )
 
                 if response.status_code == 200:
