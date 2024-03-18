@@ -5,6 +5,7 @@ services:
     build:
       context: ./app
       dockerfile: Dockerfile.prod
+    image: 905418269415.dkr.ecr.eu-west-1.amazonaws.com/django-ec2:subscriptions-api
     command: gunicorn core.wsgi:application --bind 0.0.0.0:8000
     volumes:
       - static_volume:/home/app/subscriptions-api/staticfiles
@@ -20,6 +21,7 @@ services:
   nginx:
     container_name: nginx
     build: ./nginx
+    image: 905418269415.dkr.ecr.eu-west-1.amazonaws.com/django-ec2:nginx
     restart: always
     volumes:
       - static_volume:/home/app/subscriptions-api/staticfiles
