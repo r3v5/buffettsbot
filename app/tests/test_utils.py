@@ -3,7 +3,6 @@ from datetime import datetime, timedelta
 from unittest.mock import patch
 
 import pytest
-
 from subscription_service.views import TelegramMessageSender, TronTransactionAnalyzer
 
 
@@ -168,7 +167,7 @@ class TestTelegramMessageSender:
 
         # Test sending a message with photo to the chat
         response = TelegramMessageSender.send_message_with_photo_to_chat(
-            "Test Message", "media/buffets-on-crows.jpg", 123
+            "Test Message", "media/1-day.jpg", 123
         )
 
         # Assert that the response is successful

@@ -54,9 +54,9 @@ class Plan(models.Model):
 
 class Subscription(models.Model):
     customer = models.OneToOneField(
-        TelegramUser, on_delete=models.CASCADE, null=False, blank=False
+        TelegramUser, on_delete=models.SET_NULL, null=True, blank=True
     )
-    plan = models.ForeignKey(Plan, on_delete=models.CASCADE, null=False, blank=False)
+    plan = models.ForeignKey(Plan, on_delete=models.SET_NULL, null=True, blank=True)
     transaction_hash = models.CharField(
         unique=True, null=False, blank=False, max_length=256
     )
