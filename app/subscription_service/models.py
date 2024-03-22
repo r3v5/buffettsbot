@@ -37,6 +37,7 @@ class TelegramUser(AbstractBaseUser, PermissionsMixin):
 
 class Plan(models.Model):
     PERIOD_CHOICES = [
+        ("3 minutes", "3 minutes"),
         ("2 days", "2 days"),
         ("1 month", "1 month"),
         ("3 months", "3 months"),
@@ -53,9 +54,9 @@ class Plan(models.Model):
 
 class Subscription(models.Model):
     customer = models.OneToOneField(
-        TelegramUser, on_delete=models.SET_NULL, null=True, blank=True
+        TelegramUser, on_delete=models.CASCADE, null=False, blank=False
     )
-    plan = models.ForeignKey(Plan, on_delete=models.SET_NULL, null=True, blank=True)
+    plan = models.ForeignKey(Plan, on_delete=models.CASCADE, null=False, blank=False)
     transaction_hash = models.CharField(
         unique=True, null=False, blank=False, max_length=256
     )
@@ -73,7 +74,10 @@ class Subscription(models.Model):
         super().save(*args, **kwargs)
 
     def set_duration(self):
-        if self.plan.period == "2 days":
+        if self.plan.period == "3 minutes":
+            self.duration = timedelta(minutes=3)
+
+        elif self.plan.period == "2 days":
             self.duration = timedelta(days=2)
 
         elif self.plan.period == "1 month":
