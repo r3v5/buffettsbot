@@ -33,6 +33,10 @@ app.conf.beat_schedule = {
         "task": "subscription_service.tasks.notify_about_expiring_subscriptions_7_days",
         "schedule": crontab(minute=0, hour=0),
     },
+    "test_notify": {
+        "task": "subscription_service.tasks.test_notify",
+        "schedule": 30.0,
+    },
 }
 
 app.autodiscover_tasks()

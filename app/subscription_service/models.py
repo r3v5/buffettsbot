@@ -37,7 +37,7 @@ class TelegramUser(AbstractBaseUser, PermissionsMixin):
 
 class Plan(models.Model):
     PERIOD_CHOICES = [
-        ("3 minutes", "3 minutes"),
+        ("5 minutes", "5 minutes"),
         ("2 days", "2 days"),
         ("1 month", "1 month"),
         ("3 months", "3 months"),
@@ -74,8 +74,8 @@ class Subscription(models.Model):
         super().save(*args, **kwargs)
 
     def set_duration(self):
-        if self.plan.period == "3 minutes":
-            self.duration = timedelta(minutes=3)
+        if self.plan.period == "5 minutes":
+            self.duration = timedelta(minutes=5)
 
         elif self.plan.period == "2 days":
             self.duration = timedelta(days=2)
