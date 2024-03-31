@@ -3,7 +3,6 @@ from datetime import datetime, timedelta
 import pytest
 import pytz
 from django.utils import timezone
-
 from subscription_service.models import Plan, Subscription, TelegramUser
 from subscription_service.serializers import (
     GetSubscriptionSerializer,
@@ -45,7 +44,7 @@ def test_valid_post_subscription_serializer():
         chat_id=67890,
         telegram_username="@test_user",
     )
-    plan = Plan.objects.create(period="2 days", price=19)
+    plan = Plan.objects.create(period="1 month", price=100)
     subscription_data = {
         "customer": user.chat_id,
         "plan": plan.id,
@@ -59,7 +58,7 @@ def test_valid_post_subscription_serializer():
     # Check if the object is saved in the database
     assert Subscription.objects.filter(transaction_hash="63247632g236776322").exists()
     saved_subscription = Subscription.objects.get(customer=user)
-    expected_end_date = subscription_data["start_date"] + timedelta(days=2)
+    expected_end_date = subscription_data["start_date"] + timedelta(days=30)
     assert saved_subscription.end_date.replace(
         microsecond=0
     ) == expected_end_date.replace(microsecond=0)
@@ -71,7 +70,7 @@ def test_invalid_post_subscription_serializer():
         chat_id=67890,
         telegram_username="@test_user",
     )
-    plan = Plan.objects.create(period="2 days", price=19)
+    plan = Plan.objects.create(period="1 month", price=100)
     subscription_data = {
         "customer": user.chat_id,
         "plan": plan.id,
@@ -91,11 +90,11 @@ def test_valid_get_subscription_serializer():
     )
 
     # Create a Plan
-    plan = Plan.objects.create(period="2 days", price=19)
+    plan = Plan.objects.create(period="1 month", price=100)
 
     # Create a Subscription
     start_date = datetime(2024, 3, 1, 0, 38, 38, tzinfo=pytz.UTC)
-    end_date = start_date + timezone.timedelta(days=2)
+    end_date = start_date + timezone.timedelta(days=30)
     subscription = Subscription.objects.create(
         customer=user,
         plan=plan,
@@ -110,8 +109,8 @@ def test_valid_get_subscription_serializer():
     # Define the expected serialized data
     expected_data = {
         "customer": "test_user",
-        "plan": "2 days",
-        "price": 19,
+        "plan": "1 month",
+        "price": 100,
         "transaction_hash": "iu2grug8273g87329892837tg3293",
         "start_date": start_date.astimezone(pytz.timezone("Europe/Moscow")).strftime(
             "%d/%m/%Y %H:%M:%S"

@@ -20,6 +20,8 @@ SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 
 CSRF_TRUSTED_ORIGINS = os.environ.get("CSRF_TRUSTED_ORIGINS").split(" ")
 
+# CSRF_TRUSTED_ORIGINS = ["http://localhost:1337"] for local development
+
 CORS_ALLOW_ALL_ORIGINS = True
 
 

@@ -3,7 +3,6 @@ from datetime import timedelta
 import pytest
 from django.db import IntegrityError
 from django.utils import timezone
-
 from subscription_service.models import Plan, Subscription, TelegramUser
 
 
@@ -37,32 +36,32 @@ def test_telegram_user_str_method():
 @pytest.mark.django_db
 def test_create_plan():
     # Test creating a plan
-    Plan.objects.create(period="2 days", price=19)
-    saved_plan = Plan.objects.get(period="2 days")
+    Plan.objects.create(period="1 month", price=100)
+    saved_plan = Plan.objects.get(period="1 month")
     assert Plan.objects.count() == 1
-    assert saved_plan.period == "2 days"
-    assert saved_plan.price == 19
+    assert saved_plan.period == "1 month"
+    assert saved_plan.price == 100
 
 
 @pytest.mark.django_db
 def test_unique_period():
     # Test unique constraint on period field
-    Plan.objects.create(period="2 days", price=19)
+    Plan.objects.create(period="1 month", price=100)
     with pytest.raises(Exception):
-        Plan.objects.create(period="2 days", price=19)
+        Plan.objects.create(period="1 month", price=100)
 
 
 @pytest.mark.django_db
 def test_plan_string_representation():
     # Test string representation of Plan model
-    plan = Plan.objects.create(period="2 days", price=19)
-    assert str(plan) == "2 days Plan - $19"
+    plan = Plan.objects.create(period="1 month", price=100)
+    assert str(plan) == "1 month Plan - $100"
 
 
 @pytest.mark.django_db
 def test_subscription_model():
     # Create a test plan
-    plan = Plan.objects.create(period="2 days", price=19)
+    plan = Plan.objects.create(period="1 month", price=100)
 
     # Create a test user
     user = TelegramUser.objects.create(
@@ -82,7 +81,7 @@ def test_subscription_model():
     )
 
     # Check if the end_date is calculated correctly
-    expected_end_date = subscription.start_date + timedelta(days=2)
+    expected_end_date = subscription.start_date + timedelta(days=30)
 
     # Check if the end_date is correctly set based on the plan's period
     assert saved_subscription.end_date == expected_end_date
@@ -91,7 +90,7 @@ def test_subscription_model():
 @pytest.mark.django_db
 def test_subscription_save():
     # Create a test plan
-    plan = Plan.objects.create(period="2 days", price=19)
+    plan = Plan.objects.create(period="1 month", price=100)
 
     # Create a test user
     user = TelegramUser.objects.create(
@@ -118,16 +117,6 @@ def test_subscription_save():
 def test_subscription_end_date_calculation():
     # Test if end_date is calculated correctly for different plan periods
     start_date = timezone.now()
-
-    # Test 2 days plan
-    plan_2_days = Plan.objects.create(period="2 days", price=19)
-    subscription_2_days = Subscription.objects.create(
-        customer=None,
-        plan=plan_2_days,
-        transaction_hash="0owq2i3nfqwiofnnqwoi_2_days",
-        start_date=start_date,
-    )
-    assert subscription_2_days.end_date == start_date + timezone.timedelta(days=2)
 
     # Test 1 month plan
     plan_1_month = Plan.objects.create(period="1 month", price=29)
@@ -187,14 +176,14 @@ def test_unique_transaction_hash():
     # Test unique constraint on transaction_hash field
     Subscription.objects.create(
         customer=None,
-        plan=Plan.objects.create(period="2 days", price=19),
+        plan=Plan.objects.create(period="1 month", price=100),
         transaction_hash="0owq2i3nfqwiofnnqwoi_unique",
         start_date=timezone.now(),
     )
     with pytest.raises(Exception):
         Subscription.objects.create(
             customer=None,
-            plan=Plan.objects.create(period="2 days", price=19),
+            plan=Plan.objects.create(period="1 month", price=100),
             transaction_hash="0owq2i3nfqwiofnnqwoi_unique",
             start_date=timezone.now(),
         )
@@ -204,7 +193,7 @@ def test_unique_transaction_hash():
 def test_negative_plan_price():
     # Test creating a plan with a negative price
     with pytest.raises(IntegrityError):
-        Plan.objects.create(period="2 days", price=-10)
+        Plan.objects.create(period="1 month", price=-10)
 
 
 @pytest.mark.django_db
@@ -213,7 +202,7 @@ def test_subscription_model_relationships():
     user = TelegramUser.objects.create(
         chat_id=123456789, telegram_username="@test_user"
     )
-    plan = Plan.objects.create(period="2 days", price=19)
+    plan = Plan.objects.create(period="1 month", price=100)
     subscription = Subscription.objects.create(
         customer=user,
         plan=plan,

@@ -6,7 +6,6 @@ from django.utils import timezone
 from django.utils.timezone import localtime
 from rest_framework import status
 from rest_framework.test import APIClient
-
 from subscription_service.models import Plan, Subscription, TelegramUser
 
 
@@ -134,7 +133,7 @@ def test_valid_get_subscription():
     print(f"User: {user}")
 
     # Create a Plan
-    plan = Plan.objects.create(period="2 days", price=19)
+    plan = Plan.objects.create(period="1 month", price=100)
 
     # Create a Subscription
     subscription = Subscription.objects.create(

@@ -3,7 +3,6 @@ from unittest.mock import patch
 
 import pytest
 from django.utils import timezone
-
 from subscription_service.models import Plan, Subscription, TelegramUser
 from subscription_service.tasks import (
     delete_expired_subscriptions,
@@ -21,13 +20,13 @@ def test_find_new_subscriptions(mock_telegram_message_sender):
     admin_user = TelegramUser.objects.create(
         chat_id=1, telegram_username="admin", is_staff=True
     )
-    plan = Plan.objects.create(period="2 days", price=10)
+    plan = Plan.objects.create(period="1 month", price=100)
     Subscription.objects.create(
         customer=admin_user,
         plan=plan,
         transaction_hash="1234567890",
         start_date=datetime.now(),
-        end_date=datetime.now() + timedelta(days=2),
+        end_date=datetime.now() + timedelta(days=30),
     )
 
     # Mock TelegramMessageSender
@@ -50,12 +49,12 @@ def test_delete_expired_subscriptions(mock_telegram_message_sender):
     admin_user = TelegramUser.objects.create(
         chat_id=1, telegram_username="admin", is_staff=True
     )
-    plan = Plan.objects.create(period="2 days", price=10)
+    plan = Plan.objects.create(period="1 month", price=100)
     Subscription.objects.create(
         customer=admin_user,
         plan=plan,
         transaction_hash="1234567890",
-        start_date=datetime.now() - timedelta(days=5),
+        start_date=datetime.now() - timedelta(days=33),
         end_date=datetime.now() - timedelta(days=3),
     )
 
@@ -77,7 +76,7 @@ def test_delete_expired_subscriptions(mock_telegram_message_sender):
 def test_notify_about_expiring_subscriptions_1_day():
     # Create a subscription ending in 1 day
     user = TelegramUser.objects.create(telegram_username="expiring_user", chat_id=789)
-    plan = Plan.objects.create(period="2 days", price=10)
+    plan = Plan.objects.create(period="1 month", price=100)
     subscription = Subscription.objects.create(
         customer=user,
         plan=plan,
@@ -100,7 +99,7 @@ def test_notify_about_expiring_subscriptions_3_days():
     user = TelegramUser.objects.create(
         telegram_username="expiring_user_3_days", chat_id=789
     )
-    plan = Plan.objects.create(period="2 days", price=10)
+    plan = Plan.objects.create(period="1 month", price=100)
     subscription = Subscription.objects.create(
         customer=user,
         plan=plan,
@@ -124,7 +123,7 @@ def test_notify_about_expiring_subscriptions_7_days():
     user = TelegramUser.objects.create(
         telegram_username="expiring_user_7_days", chat_id=789
     )
-    plan = Plan.objects.create(period="2 days", price=10)
+    plan = Plan.objects.create(period="1 month", price=100)
     subscription = Subscription.objects.create(
         customer=user,
         plan=plan,
