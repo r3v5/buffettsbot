@@ -1,6 +1,6 @@
-# Buffetsbot
+# [Buffetsbot](https://buffetsbot.com/)
 
-★ Played a key role in building API microservice for payment and renewal private subscriptions on closed community of investors in Telegram using crypto payments in TRC-20 USDT with mission-critical transaction hash validation using AWS, Docker, Python, Django Rest Framework, PostgreSQL, Redis, Nginx, Gunicorn, Celery, Pytest, Ubuntu Linux, SSL.
+★ Buffetsbot is an API microservice for payment and renewal private subscriptions on closed community of investors in Telegram using crypto payments in TRC-20 USDT with mission-critical transaction hash validation using AWS, Docker, Python, Django Rest Framework, PostgreSQL, Redis, Nginx, Gunicorn, Celery, Pytest, Ubuntu Linux, SSL.
 
 ★ Designed and developed a reliable and secure architecture of database that is protected from reentrancy vulnerabilities with Tron blockchain transactions hash. Used django-cachalot to cache Django ORM queries and automatically invalidate them. It decreased database queries on 30%.
 
