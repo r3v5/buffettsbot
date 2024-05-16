@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   subscriptions-api:
     build:
@@ -39,6 +37,11 @@ services:
   redis:
     image: redis:7.2.4-alpine
     hostname: redis
+    command: redis-server --save "" --appendonly no --maxmemory 1gb  # Disable RDB snapshots and set max memory
+    volumes:
+      - redis_data:/data
+    environment:
+      - REDIS_MAXMEMORY=1gb
   
   worker:
     build:
@@ -56,6 +59,8 @@ services:
       - subscriptions-db
     env_file:
       - ./.env.dev
+    environment:
+      - CELERY_BROKER_CONNECTION_RETRY_ON_STARTUP=True
   
   celery-beat:
     build:
@@ -71,8 +76,11 @@ services:
       - subscriptions-db
     env_file:
       - ./.env.dev
+    environment:
+      - CELERY_BROKER_CONNECTION_RETRY_ON_STARTUP=True
  
 volumes:
   postgres_data:
   static_volume:
   media_volume:
+  redis_data:

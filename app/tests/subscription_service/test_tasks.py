@@ -6,40 +6,10 @@ from django.utils import timezone
 from subscription_service.models import Plan, Subscription, TelegramUser
 from subscription_service.tasks import (
     delete_expired_subscriptions,
-    find_new_subscriptions,
     notify_about_expiring_subscriptions_1_day,
     notify_about_expiring_subscriptions_3_days,
     notify_about_expiring_subscriptions_7_days,
 )
-
-
-@pytest.mark.django_db
-@patch("subscription_service.tasks.TelegramMessageSender")
-def test_find_new_subscriptions(mock_telegram_message_sender):
-    # Create mock objects
-    admin_user = TelegramUser.objects.create(
-        chat_id=1, telegram_username="admin", is_staff=True
-    )
-    plan = Plan.objects.create(period="1 month", price=100)
-    Subscription.objects.create(
-        customer=admin_user,
-        plan=plan,
-        transaction_hash="1234567890",
-        start_date=datetime.now(),
-        end_date=datetime.now() + timedelta(days=30),
-    )
-
-    # Mock TelegramMessageSender
-    mock_telegram_message_sender.create_message_about_add_user.return_value = (
-        "Test message"
-    )
-    mock_telegram_message_sender.send_message_to_chat.return_value.status_code = 200
-
-    # Run Celery task
-    find_new_subscriptions()
-
-    # Assertions
-    assert Subscription.objects.filter(customer=admin_user).exists() is True
 
 
 @pytest.mark.django_db

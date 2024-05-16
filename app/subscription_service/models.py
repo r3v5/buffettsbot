@@ -56,7 +56,7 @@ class Subscription(models.Model):
     )
     plan = models.ForeignKey(Plan, on_delete=models.SET_NULL, null=True, blank=True)
     transaction_hash = models.CharField(
-        unique=True, null=False, blank=False, max_length=256
+        primary_key=True, unique=True, null=False, blank=False, max_length=256
     )
     start_date = models.DateTimeField(default=timezone.now)
     end_date = models.DateTimeField(null=True, blank=True)

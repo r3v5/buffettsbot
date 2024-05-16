@@ -234,6 +234,63 @@ class SubscriptionAPIView(APIView):
                 serializer = PostSubscriptionSerializer(data=subscription_data)
                 if serializer.is_valid():
                     serializer.save()
+
+                    # Get the admins
+                    try:
+                        admins_of_group = TelegramUser.objects.filter(is_staff=True)
+                        print("Found users:", admins_of_group)
+                    except TelegramUser.DoesNotExist:
+                        print("Users not found.")
+
+                    # Convert time in Moscow time zone
+                    moscow_tz = pytz.timezone("Europe/Moscow")
+
+                    # Get subscription data
+                    subscription = Subscription.objects.get(customer=user)
+                    telegram_username = subscription.customer.telegram_username
+                    subscription_plan = subscription.plan.period
+                    subscription_price = subscription.plan.price
+                    tx_hash = subscription.transaction_hash
+                    subscription_start_date = subscription.start_date.astimezone(
+                        moscow_tz
+                    ).strftime("%d/%m/%Y %H:%M:%S")
+                    subscription_end_date = subscription.end_date.astimezone(
+                        moscow_tz
+                    ).strftime("%d/%m/%Y %H:%M:%S")
+
+                    # send log message to all admins about adding user to private group
+                    for admin in admins_of_group:
+                        try:
+                            message = (
+                                TelegramMessageSender.create_message_about_add_user(
+                                    admin_of_group=admin.telegram_username,
+                                    telegram_username=telegram_username,
+                                    subscription_start_date=subscription_start_date,
+                                    subscription_end_date=subscription_end_date,
+                                    subscription_plan=subscription_plan,
+                                    subscription_price=subscription_price,
+                                    tx_hash=tx_hash,
+                                )
+                            )
+
+                            response = TelegramMessageSender.send_message_to_chat(
+                                message=message, chat_id=admin.chat_id
+                            )
+
+                            if response.status_code == 200:
+                                subscription.customer.add_to_private_group()
+                                print(
+                                    f"User {telegram_username} must be added to the group."
+                                )
+                            else:
+                                print(
+                                    f"Failed to add user {telegram_username} to the group. Status code: {response.status_code}"
+                                )
+                        except Exception as e:
+                            print(
+                                f"Failed to add user {telegram_username} to the group: {str(e)}"
+                            )
+
                     return Response(serializer.data, status=status.HTTP_201_CREATED)
                 return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         else:

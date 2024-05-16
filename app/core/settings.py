@@ -16,11 +16,11 @@ DEBUG = int(os.environ.get("DEBUG", default=0))
 
 ALLOWED_HOSTS = os.environ.get("DJANGO_ALLOWED_HOSTS").split(" ")
 
-SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+# SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 
-CSRF_TRUSTED_ORIGINS = os.environ.get("CSRF_TRUSTED_ORIGINS").split(" ")
+# CSRF_TRUSTED_ORIGINS = os.environ.get("CSRF_TRUSTED_ORIGINS").split(" ")
 
-# CSRF_TRUSTED_ORIGINS = ["http://localhost:1337"] for local development
+CSRF_TRUSTED_ORIGINS = ["http://localhost:1337"]
 
 CORS_ALLOW_ALL_ORIGINS = True
 
@@ -106,6 +106,9 @@ DATABASES = {
 }"""
 
 CELERY_BROKER_URL = "redis://redis:6379/0"
+CELERY_BROKER_CONNECTION_RETRY_ON_STARTUP = os.environ.get(
+    "CELERY_BROKER_CONNECTION_RETRY_ON_STARTUP"
+)
 
 CACHES = {
     "default": {
