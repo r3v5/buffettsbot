@@ -259,3 +259,6 @@ Project Link: [https://github.com/r3v5/buffettsbot](https://github.com/r3v5/buff
 
 <p align="right">(<a href="#about-the-project">back to top</a>)</p>
 
+=======
+★ Buffetsbot is scalable API microservice for payment and renewal private subscriptions on closed community of investors in Telegram using crypto payments in TRC-20 USDT with blockchain transaction hash validation and built using Amazon Web Services, Docker, Python, Django Rest Framework, PostgreSQL, Redis, Nginx, Gunicorn, Celery, Pytest, Linux Ubuntu, Secure Socket Layer.
+>>>>>>> 9c23bfa0e180267dcfdbce9468b9a11bc7d4dcae
