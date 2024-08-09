@@ -1,5 +1,4 @@
 # **Buffetsbot**
-
 ★ Buffetsbot is scalable API for payment and renewal private subscriptions on closed community of investors in Telegram using crypto payments in TRC-20 USDT with blockchain transaction hash validation and built using Amazon Web Services, Docker, Python, Django Rest Framework, PostgreSQL, Redis, Nginx, Gunicorn, Celery, Pytest, Linux Ubuntu, Secure Socket Layer.
 
 <a name="readme-top"></a>
@@ -237,11 +236,16 @@ _Below is an example of how you can instruct your audience on installing and set
    ```
    docker compose -f docker-compose.dev.yml up --build
    ```
-   7. Create superuser and then navigate to http://localhost:1337/tgadmin/login/?next=/tgadmin/:
+  7. Run tests:
+   ```
+   docker compose -f docker-compose.dev.yml exec subscriptions-api pytest
+   ```
+   
+   8. Create superuser and then navigate to http://localhost:1337/tgadmin/login/?next=/tgadmin/:
    ```
    docker compose -f docker-compose.dev.yml exec subscriptions-api python manage.py createsuperuser
    ```
-   8. In admin panel you can create plans and prices for subscriptions :)
+   9. In admin panel you can create plans and prices for subscriptions :)
   
 
 <p align="right">(<a href="#about-the-project">back to top</a>)</p>
@@ -259,3 +263,4 @@ Ian Miller - [linkedin](https://www.linkedin.com/in/ian-miller-620a63245/)
 Project Link: [https://github.com/r3v5/buffettsbot](https://github.com/r3v5/buffettsbot)
 
 <p align="right">(<a href="#about-the-project">back to top</a>)</p>
+
