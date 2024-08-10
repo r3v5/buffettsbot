@@ -59,7 +59,7 @@ Here's why:
 <p align="right">(<a href="#about-the-project">back to top</a>)</p>
 
 ### System Design Overview
-![System Design](https://raw.githubusercontent.com/r3v5/buffettsbot/main/buffetsbot-system-design.png)
+![System Design](https://raw.githubusercontent.com/r3v5/buffettsbot/main/buffettsbot-system-design.png)
 
 
 ### System Design In Depth
