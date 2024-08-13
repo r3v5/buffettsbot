@@ -1,5 +1,5 @@
 # **Buffetsbot**
-★ Buffetsbot is scalable API for payment and renewal private subscriptions on closed community of investors in Telegram using crypto payments in TRC-20 USDT with blockchain transaction hash validation and built using Amazon Web Services, Docker, Python, Django Rest Framework, PostgreSQL, Redis, Nginx, Gunicorn, Celery, Pytest, Linux Ubuntu, Secure Socket Layer.
+★ Buffetsbot is robust API for payment and renewal private subscriptions on closed community of investors in Telegram using crypto payments in TRC-20 USDT with blockchain transaction hash validation and built using Amazon Web Services, Docker, Python, Django Rest Framework, PostgreSQL, Redis, Nginx, Gunicorn, Celery, Pytest, Linux Ubuntu, Secure Socket Layer.
 
 <a name="readme-top"></a>
 <!-- PROJECT LOGO -->
@@ -47,7 +47,7 @@
 <!-- ABOUT THE PROJECT -->
 ## About The Project
 
-Buffettsbot  API provides a system for payments and renewals private subscriptions on closed community of investors in Telegram using crypto payments in TRC-20 USDT with blockchain transaction hash validation and notification system to stay connected with customers
+Buffettsbot API provides a system for payments and renewals private subscriptions on closed community of investors in Telegram using crypto payments in TRC-20 USDT with blockchain transaction hash validation and notification system to stay connected with customers
 
 Here's why:
 •  Simplify subscription management through a robust API with integration in Telegram.
