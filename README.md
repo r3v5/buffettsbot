@@ -129,6 +129,8 @@ app.autodiscover_tasks()
 ```
 
 **2. Database (PostgreSQL)**
+## Buffettsbot Database Overview
+![System Design](https://raw.githubusercontent.com/r3v5/buffettsbot/main/buffettsbot-db.png)
 •  **Tables**:
 - **TelegramUser**: Stores data about user
   - **Fields**:
