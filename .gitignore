@@ -10,3 +10,4 @@ env
 celerybeat-schedule
 .idea/
 .vscode/
+staticfiles

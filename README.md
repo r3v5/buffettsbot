@@ -204,7 +204,7 @@ app.autodiscover_tasks()
    ```sh
    cd buffettsbot
    ```
-5. Create a .env.dev file
+4. Create a .env.dev file
    ```
    DEBUG=1
    SECRET_KEY=foo
@@ -225,32 +225,34 @@ app.autodiscover_tasks()
    STAS_TRC20_WALLET_ADDRESS=<YOUR-TRC-20-WALLET>
    TELEGRAM_BOT_TOKEN=<YOUR-TELEGRAM-BOT-TOKEN>``
   
-  6. In settings.py comment these variables
+  5. In settings.py comment these variables
    ```
    #SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
-#CSRF_TRUSTED_ORIGINS = os.environ.get("CSRF_TRUSTED_ORIGINS").split(" ")
+   #CSRF_TRUSTED_ORIGINS = os.environ.get("CSRF_TRUSTED_ORIGINS").split(" ")
    ```
-   6. Start building docker containers with app and run:
+  6. Start building docker containers and run:
    ```
    docker compose -f docker-compose.dev.yml up --build
    ```
-  7. Run tests:
+  7. Make migrations, apply them and collect staticfiles::
+   ```
+   docker compose -f docker-compose.dev.yml exec subscriptions-api python manage.py makemigrations
+   docker compose -f docker-compose.dev.yml exec subscriptions-api python manage.py migrate
+   docker compose -f docker-compose.dev.yml exec subscriptions-api python manage.py collectstatic --no-input --clear
+   ``` 
+  8. Run tests:
    ```
    docker compose -f docker-compose.dev.yml exec subscriptions-api pytest
    ```
    
-   8. Create superuser and then navigate to http://localhost:1337/tgadmin/login/?next=/tgadmin/:
+   9. Create superuser and then navigate to http://localhost:1337/tgadmin/login/?next=/tgadmin/:
    ```
    docker compose -f docker-compose.dev.yml exec subscriptions-api python manage.py createsuperuser
    ```
-   9. In admin panel you can create plans and prices for subscriptions :)
+   10. In admin panel you can create plans and prices for subscriptions and manage your subscribers :)
   
 
 <p align="right">(<a href="#about-the-project">back to top</a>)</p>
-
-
-
-
 
 
 <!-- CONTACT -->

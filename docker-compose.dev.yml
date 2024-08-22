@@ -5,26 +5,29 @@ services:
       dockerfile: Dockerfile.dev
     command: gunicorn core.wsgi:application --bind 0.0.0.0:8000
     volumes:
-      - static_volume:/home/app/subscriptions-api/staticfiles
-      - media_volume:/home/app/subscriptions-api/mediafiles
       - ./app/:/usr/src/app/
-    expose:
-      - 8000
+      - static_volume:/usr/src/app/staticfiles
+      - media_volume:/usr/src/app/mediafiles
+    ports:
+      - 8000:8000
     env_file:
       - ./.env.dev
     depends_on:
       - subscriptions-db
+      - redis
   
   nginx:
     build: ./nginx-dev
     restart: always
     volumes:
-      - static_volume:/home/app/subscriptions-api/staticfiles
-      - media_volume:/home/app/subscriptions-api/mediafiles
+      - static_volume:/usr/src/app/staticfiles
+      - media_volume:/usr/src/app/mediafiles
     ports:
       - 1337:80
     depends_on:
       - subscriptions-api
+    links:
+      - redis
     
   subscriptions-db:
     image: postgres:15
@@ -33,6 +36,10 @@ services:
     restart: always
     env_file:
       - ./.env.dev
+    ports:
+      - "5432:5432"
+    links:
+      - redis
   
   redis:
     image: redis:7.2.4-alpine
@@ -52,11 +59,14 @@ services:
     command: -A celery_app.app worker --loglevel=info
     volumes:
       - ./app/:/usr/src/app/
+      - static_volume:/usr/src/app/staticfiles
+      - media_volume:/usr/src/app/mediafiles
     links:
       - redis
     depends_on:
       - redis
       - subscriptions-db
+      - subscriptions-api
     env_file:
       - ./.env.dev
     environment:
@@ -71,9 +81,12 @@ services:
     command: -A celery_app.app beat --loglevel=info
     volumes:
       - ./app/:/usr/src/app/
+      - static_volume:/usr/src/app/staticfiles
+      - media_volume:/usr/src/app/mediafiles
     depends_on:
       - redis
       - subscriptions-db
+      - subscriptions-api
     env_file:
       - ./.env.dev
     environment:

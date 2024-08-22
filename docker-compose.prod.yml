@@ -6,9 +6,9 @@ services:
     image: 905418269415.dkr.ecr.eu-west-1.amazonaws.com/django-ec2:subscriptions-api
     command: gunicorn core.wsgi:application --bind 0.0.0.0:8000
     volumes:
-      - static_volume:/home/app/subscriptions-api/staticfiles
-      - media_volume:/home/app/subscriptions-api/mediafiles
       - ./app/:/usr/src/app/
+      - static_volume:/usr/src/app/staticfiles
+      - media_volume:/usr/src/app/mediafiles
     expose:
       - 8000
     env_file:
@@ -22,8 +22,8 @@ services:
     image: 905418269415.dkr.ecr.eu-west-1.amazonaws.com/django-ec2:nginx
     restart: always
     volumes:
-      - static_volume:/home/app/subscriptions-api/staticfiles
-      - media_volume:/home/app/subscriptions-api/mediafiles
+      - static_volume:/usr/src/app/staticfiles
+      - media_volume:/usr/src/app/mediafiles
       - certs:/etc/nginx/certs
       - html:/usr/share/nginx/html
       - vhost:/etc/nginx/vhost.d
@@ -33,6 +33,9 @@ services:
       - 80:80
     depends_on:
       - subscriptions-api
+    links:
+      - redis
+
   
   acme-companion:
     image: nginxproxy/acme-companion
@@ -54,6 +57,10 @@ services:
     restart: always
     env_file:
       - ./.env.prod
+    ports:
+      - "5432:5432"
+    links:
+      - redis
   
   redis:
     image: redis:7.2.4-alpine
@@ -73,11 +80,14 @@ services:
     command: -A celery_app.app worker --loglevel=info
     volumes:
       - ./app/:/usr/src/app/
+      - static_volume:/usr/src/app/staticfiles
+      - media_volume:/usr/src/app/mediafiles
     links:
       - redis
     depends_on:
       - redis
       - subscriptions-db
+      - subscriptions-api
     env_file:
       - ./.env.prod
     environment:
@@ -92,9 +102,12 @@ services:
     command: -A celery_app.app beat --loglevel=info
     volumes:
       - ./app/:/usr/src/app/
+      - static_volume:/usr/src/app/staticfiles
+      - media_volume:/usr/src/app/mediafiles
     depends_on:
       - redis
       - subscriptions-db
+      - subscriptions-api
     env_file:
       - ./.env.prod
     environment:

@@ -1,9 +1,9 @@
 location /static/ {
-  alias /home/app/subscriptions-api/staticfiles/;
+  alias /usr/src/app/staticfiles/;
   add_header Access-Control-Allow-Origin *;
 }
 
 location /media/ {
-  alias /home/app/subscriptions-api/mediafiles/;
+  alias /usr/src/app/staticfiles/;
   add_header Access-Control-Allow-Origin *;
 }
